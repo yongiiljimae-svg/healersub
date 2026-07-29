@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Healer Sub؛ مرجع دانلود جدیدترین زیرنویس فارسی فیلم، سریال و برنامه‌های کره‌ای با ترجمه روان و به‌روز.">
+<meta name="theme-color" content="#0b0d11">
+<title>Healer Sub | زیرنویس فیلم و سریال کره‌ای</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="supabase-client.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">رفتن به محتوای اصلی</a>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header" id="site-header">
+  <div class="wrap header-row">
+    <a href="#/home" class="brand" aria-label="صفحه اصلی Healer Sub">
+      <span class="brand-mark"><i data-lucide="captions"></i></span>
+      <span class="brand-word">
+        <strong>Healer</strong><small>SUB</small>
+      </span>
+    </a>
+
+    <nav class="nav-desktop" aria-label="منوی اصلی">
+      <a href="#/home" data-route="home">خانه</a>
+      <a href="#/movies" data-route="movies">فیلم‌ها</a>
+      <a href="#/series" data-route="series">سریال‌ها</a>
+      <a href="#/shows" data-route="shows">برنامه‌ها</a>
+      <a href="#/comments" data-route="comments">نظرات</a>
+    </nav>
+
+    <div class="header-tools">
+      <button class="icon-btn" id="search-open" type="button" aria-label="جست‌وجو">
+        <i data-lucide="search"></i>
+      </button>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="تغییر پوسته">
+        <i data-lucide="moon"></i>
+      </button>
+      <a href="#/series" class="btn btn-gold btn-sm header-cta">
+        <i data-lucide="download"></i>
+        جدیدترین‌ها
+      </a>
+      <button class="icon-btn menu-toggle" id="menu-toggle" type="button" aria-label="منوی موبایل" aria-expanded="false">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+  </div>
+
+  <nav class="nav-mobile" id="nav-mobile" aria-label="منوی موبایل">
+    <a href="#/home" data-route="home"><i data-lucide="house"></i>خانه</a>
+    <a href="#/movies" data-route="movies"><i data-lucide="clapperboard"></i>فیلم‌ها</a>
+    <a href="#/series" data-route="series"><i data-lucide="tv"></i>سریال‌ها</a>
+    <a href="#/shows" data-route="shows"><i data-lucide="mic-2"></i>برنامه‌ها</a>
+    <a href="#/comments" data-route="comments"><i data-lucide="messages-square"></i>نظرات کاربران</a>
+  </nav>
+</header>
+
+<!-- ============ APP ROOT ============ -->
+<main id="main-content" tabindex="-1">
+  <div id="app"></div>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-about">
+      <a href="#/home" class="brand">
+        <span class="brand-mark"><i data-lucide="captions"></i></span>
+        <span class="brand-word"><strong>Healer</strong><small>SUB</small></span>
+      </a>
+      <p>آرشیوی از زیرنویس‌های فارسیِ روان و هماهنگ برای فیلم، سریال و
+      برنامه‌های کره‌ای — برای تماشایی بی‌وقفه.</p>
+      <div class="social-row">
+        <a href="#" aria-label="تلگرام"><i data-lucide="send"></i></a>
+        <a href="#" aria-label="اینستاگرام"><i data-lucide="instagram"></i></a>
+        <a href="#" aria-label="دیسکورد"><i data-lucide="message-circle"></i></a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h2>دسترسی سریع</h2>
+      <ul>
+        <li><a href="#/movies">فیلم‌های کره‌ای</a></li>
+        <li><a href="#/series">سریال‌های کره‌ای</a></li>
+        <li><a href="#/shows">برنامه‌های کره‌ای</a></li>
+        <li><a href="#/comments">نظرات کاربران</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h2>راهنما</h2>
+      <ul>
+        <li><a href="#">راهنمای دانلود زیرنویس</a></li>
+        <li><a href="#">ثبت درخواست ترجمه</a></li>
+        <li><a href="#">همکاری با مترجمان</a></li>
+        <li><a href="#">قوانین و حریم خصوصی</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col footer-news">
+      <h2>خبرنامه</h2>
+      <p>وقتی زیرنویس تازه منتشر می‌شود، اول به شما خبر می‌دهیم.</p>
+      <form id="newsletter-form" novalidate>
+        <label class="sr-only" for="newsletter-email">ایمیل</label>
+        <input id="newsletter-email" type="email" placeholder="ایمیل شما" autocomplete="email" required>
+        <button type="submit" aria-label="عضویت در خبرنامه"><i data-lucide="arrow-left"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="wrap footer-bottom">
+    <p>© ۱۴۰۵ Healer Sub — ساخته‌شده برای کیدرامرها.</p>
+    <p class="footer-timecode">HEALER-SUB.SRT&nbsp; 00:00:00,000 &rarr; ∞</p>
+  </div>
+</footer>
+
+<!-- ============ SEARCH DIALOG ============ -->
+<div class="overlay" id="search-dialog" role="dialog" aria-modal="true" aria-labelledby="search-title" hidden>
+  <section class="search-panel">
+    <header class="panel-head">
+      <div>
+        <span class="cap">۰۰:۰۰ — جست‌وجوی سریع</span>
+        <h2 id="search-title">دنبال چی می‌گردی؟</h2>
+      </div>
+      <button class="icon-btn" type="button" data-close-dialog aria-label="بستن">
+        <i data-lucide="x"></i>
+      </button>
+    </header>
+
+    <div class="search-box">
+      <i data-lucide="search"></i>
+      <input id="search-input" type="search" placeholder="نام فیلم، سریال یا برنامه را بنویسید..." autocomplete="off">
+      <kbd>ESC</kbd>
+    </div>
+
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </section>
+</div>
+
+<!-- ============ DETAILS DIALOG ============ -->
+<div class="overlay" id="details-dialog" role="dialog" aria-modal="true" aria-labelledby="details-title" hidden>
+  <section class="details-panel" id="details-panel"></section>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <i data-lucide="circle-check"></i>
+  <span id="toast-msg"></span>
+</div>
+
+<noscript>
+  <div class="noscript-banner">برای استفاده از Healer Sub لطفاً JavaScript مرورگر خود را فعال کنید.</div>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>پنل مدیریت | Healer Sub</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="admin.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+<script src="supabase-client.js" defer></script>
+<script src="admin.js" defer></script>
+</head>
+<body class="admin-body">
+
+<!-- ============ LOGIN ============ -->
+<section class="admin-login" id="admin-login">
+  <form class="admin-login-card" id="login-form" novalidate>
+    <span class="brand-mark"><i data-lucide="captions"></i></span>
+    <h1>ورود به پنل مدیریت</h1>
+    <p>Healer Sub</p>
+    <div class="field-group">
+      <label for="login-email">ایمیل</label>
+      <input id="login-email" type="email" autocomplete="username" required>
+    </div>
+    <div class="field-group">
+      <label for="login-password">رمز عبور</label>
+      <input id="login-password" type="password" autocomplete="current-password" required>
+    </div>
+    <p class="admin-error" id="login-error" hidden></p>
+    <button type="submit" class="btn btn-gold" style="width:100%">
+      <i data-lucide="log-in"></i>ورود
+    </button>
+  </form>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="admin-dashboard" id="admin-dashboard" hidden>
+
+  <header class="admin-header">
+    <a href="index.html" class="brand" style="pointer-events:none">
+      <span class="brand-mark"><i data-lucide="captions"></i></span>
+      <span class="brand-word"><strong>Healer</strong><small>ADMIN</small></span>
+    </a>
+    <div class="admin-header-tools">
+      <span class="admin-whoami" id="admin-whoami"></span>
+      <button class="btn btn-outline btn-sm" id="logout-btn" type="button">
+        <i data-lucide="log-out"></i>خروج
+      </button>
+    </div>
+  </header>
+
+  <nav class="admin-tabs">
+    <button class="admin-tab active" data-tab="titles" type="button"><i data-lucide="clapperboard"></i>پروژه‌ها</button>
+    <button class="admin-tab" data-tab="comments" type="button"><i data-lucide="messages-square"></i>نظرات <span class="admin-badge" id="pending-badge" hidden>0</span></button>
+  </nav>
+
+  <!-- ---------- TAB: TITLES ---------- -->
+  <section class="admin-panel-view" id="tab-titles">
+    <div class="admin-toolbar">
+      <h2 id="titles-form-heading">افزودن پروژه جدید</h2>
+      <button class="btn btn-outline btn-sm" id="reset-form-btn" type="button" hidden>
+        <i data-lucide="x"></i>لغو ویرایش
+      </button>
+    </div>
+
+    <form class="admin-form" id="title-form">
+      <input type="hidden" id="t-id">
+
+      <div class="admin-form-grid">
+        <div class="field-group">
+          <label for="t-type">نوع اثر</label>
+          <select id="t-type" required>
+            <option value="movie">فیلم</option>
+            <option value="series">سریال</option>
+            <option value="show">برنامه</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="t-status">وضعیت</label>
+          <select id="t-status" required>
+            <option value="ongoing">در حال ترجمه</option>
+            <option value="completed">کامل</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="t-title">عنوان (فارسی)</label>
+          <input id="t-title" type="text" required>
+        </div>
+
+        <div class="field-group">
+          <label for="t-title-en">عنوان (انگلیسی)</label>
+          <input id="t-title-en" type="text">
+        </div>
+
+        <div class="field-group">
+          <label for="t-genre">ژانر (با ، جدا کن)</label>
+          <input id="t-genre" type="text" placeholder="درام، عاشقانه">
+        </div>
+
+        <div class="field-group">
+          <label for="t-year">سال</label>
+          <input id="t-year" type="number" placeholder="1403">
+        </div>
+
+        <div class="field-group">
+          <label for="t-tags">برچسب‌ها (با ، جدا کن)</label>
+          <input id="t-tags" type="text" placeholder="فانتزی، معمایی">
+        </div>
+
+        <div class="field-group">
+          <label for="t-rating">امتیاز</label>
+          <input id="t-rating" type="number" step="0.1" min="0" max="10" placeholder="8.5">
+        </div>
+
+        <div class="field-group">
+          <label for="t-episode">وضعیت زیرنویس / قسمت</label>
+          <input id="t-episode" type="text" placeholder="قسمت ۸ از ۱۲">
+        </div>
+
+        <div class="field-group">
+          <label for="t-duration">مدت هر قسمت</label>
+          <input id="t-duration" type="text" placeholder="۰۰:۵۵:۰۰">
+        </div>
+
+        <div class="field-group">
+          <label for="t-translator">مترجم</label>
+          <input id="t-translator" type="text">
+        </div>
+
+        <div class="field-group">
+          <label for="t-downloads">تعداد دانلود اولیه</label>
+          <input id="t-downloads" type="number" min="0" value="0">
+        </div>
+
+        <div class="field-group admin-span-2">
+          <label for="t-subtitle-link">لینک زیرنویس</label>
+          <input id="t-subtitle-link" type="url" placeholder="https://..." required>
+        </div>
+
+        <div class="field-group admin-span-2">
+          <label for="t-description">توضیحات</label>
+          <textarea id="t-description" rows="3"></textarea>
+        </div>
+
+        <div class="field-group admin-span-2">
+          <label for="t-poster">پوستر</label>
+          <input id="t-poster" type="file" accept="image/*">
+          <div class="admin-poster-preview" id="poster-preview" hidden>
+            <img id="poster-preview-img" alt="پیش‌نمایش پوستر">
+          </div>
+        </div>
+      </div>
+
+      <p class="admin-error" id="title-form-error" hidden></p>
+      <button type="submit" class="btn btn-gold" id="title-submit-btn">
+        <i data-lucide="plus"></i>افزودن پروژه
+      </button>
+    </form>
+
+    <hr class="admin-divider">
+
+    <h2>پروژه‌های موجود</h2>
+    <div class="admin-list" id="titles-list"><p class="admin-empty">در حال بارگذاری...</p></div>
+  </section>
+
+  <!-- ---------- TAB: COMMENTS ---------- -->
+  <section class="admin-panel-view" id="tab-comments" hidden>
+    <h2>مدیریت نظرات</h2>
+    <div class="admin-list" id="comments-list"><p class="admin-empty">در حال بارگذاری...</p></div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <i data-lucide="circle-check"></i>
+  <span id="toast-msg"></span>
+</div>
+
+</body>
+</html>

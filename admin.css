@@ -1,0 +1,132 @@
+.admin-body{
+  background:var(--bg,#0b0d11);
+  color:var(--text,#f2f3f5);
+  min-height:100vh;
+}
+
+.admin-login{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.admin-login-card{
+  width:100%;
+  max-width:380px;
+  background:var(--card,#161a22);
+  border:1px solid var(--border,rgba(255,255,255,.08));
+  border-radius:16px;
+  padding:32px 28px;
+  text-align:center;
+}
+.admin-login-card .brand-mark{
+  display:inline-flex;
+  width:52px;height:52px;
+  align-items:center;justify-content:center;
+  border-radius:50%;
+  background:rgba(212,175,55,.12);
+  color:#d4af37;
+  margin-bottom:14px;
+}
+.admin-login-card h1{ font-size:1.3rem; margin-bottom:4px; }
+.admin-login-card p{ color:var(--muted,#9aa1ad); margin-bottom:22px; font-size:.85rem; }
+
+.field-group{ text-align:right; margin-bottom:14px; }
+.field-group label{ display:block; font-size:.82rem; color:var(--muted,#9aa1ad); margin-bottom:6px; }
+.field-group input,
+.field-group select,
+.field-group textarea{
+  width:100%;
+  background:var(--bg,#0b0d11);
+  border:1px solid var(--border,rgba(255,255,255,.1));
+  border-radius:10px;
+  padding:10px 12px;
+  color:var(--text,#f2f3f5);
+  font-family:inherit;
+  font-size:.92rem;
+}
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus{ outline:none; border-color:#d4af37; }
+
+.admin-error{
+  background:rgba(220,60,60,.12);
+  color:#f28b8b;
+  border:1px solid rgba(220,60,60,.3);
+  border-radius:10px;
+  padding:8px 12px;
+  font-size:.82rem;
+  margin-bottom:14px;
+}
+
+/* ---------- Dashboard ---------- */
+.admin-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 24px;
+  border-bottom:1px solid var(--border,rgba(255,255,255,.08));
+}
+.admin-header-tools{ display:flex; align-items:center; gap:14px; }
+.admin-whoami{ color:var(--muted,#9aa1ad); font-size:.85rem; }
+
+.admin-tabs{
+  display:flex; gap:6px;
+  padding:0 24px;
+  border-bottom:1px solid var(--border,rgba(255,255,255,.08));
+}
+.admin-tab{
+  display:flex; align-items:center; gap:6px;
+  padding:14px 10px;
+  background:none; border:none; border-bottom:2px solid transparent;
+  color:var(--muted,#9aa1ad);
+  cursor:pointer; font-family:inherit; font-size:.9rem;
+}
+.admin-tab.active{ color:#d4af37; border-color:#d4af37; }
+.admin-badge{
+  background:#d4af37; color:#0b0d11;
+  border-radius:99px; font-size:.7rem; padding:1px 7px; font-weight:700;
+}
+
+.admin-panel-view{ padding:24px; max-width:960px; margin:0 auto; }
+.admin-toolbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+
+.admin-form-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px 16px;
+}
+.admin-span-2{ grid-column:1 / -1; }
+@media (max-width:640px){ .admin-form-grid{ grid-template-columns:1fr; } }
+
+.admin-poster-preview{ margin-top:10px; }
+.admin-poster-preview img{
+  max-width:160px; border-radius:10px; border:1px solid var(--border,rgba(255,255,255,.1));
+}
+
+.admin-divider{ border:none; border-top:1px solid var(--border,rgba(255,255,255,.08)); margin:28px 0; }
+
+.admin-list{ display:flex; flex-direction:column; gap:10px; }
+.admin-row{
+  display:flex; align-items:center; gap:14px;
+  background:var(--card,#161a22);
+  border:1px solid var(--border,rgba(255,255,255,.08));
+  border-radius:12px; padding:10px 14px;
+}
+.admin-row img{
+  width:48px; height:64px; object-fit:cover; border-radius:8px; background:#000;
+}
+.admin-row-main{ flex:1; display:flex; flex-direction:column; gap:3px; }
+.admin-row-main small{ color:var(--muted,#9aa1ad); font-size:.78rem; }
+.admin-row-actions{ display:flex; gap:8px; }
+.admin-row-actions button{
+  width:34px; height:34px; border-radius:8px;
+  background:rgba(255,255,255,.05); border:none; color:var(--text,#f2f3f5); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.admin-row-actions button.danger{ color:#f28b8b; }
+.admin-row-actions button:hover{ background:rgba(255,255,255,.1); }
+
+.admin-status-pill{ font-size:.7rem; padding:2px 8px; border-radius:99px; margin-right:6px; }
+.admin-status-pill.approved{ background:rgba(70,180,110,.15); color:#6fd39a; }
+.admin-status-pill.pending{ background:rgba(220,160,60,.15); color:#e3b45c; }
+.admin-comment-text{ color:var(--muted,#9aa1ad); font-size:.85rem; margin-top:4px; }
+
+.admin-empty{ color:var(--muted,#9aa1ad); text-align:center; padding:30px 0; }
