@@ -14,13 +14,6 @@ function mapTitleRow(r) {
     titleEn: r.title_en || "",
     year: r.year,
     genre: r.genre || "",
-    tags: r.tags || [],
-    rating: r.rating || 0,
-    status: r.status,
-    episodeLabel: r.episode_label || "",
-    duration: r.duration || "",
-    translator: r.translator || "",
-    downloads: r.downloads || 0,
     image: r.poster_url || HERO_IMAGE,
     subtitleLink: r.subtitle_link || "",
     description: r.description || ""
@@ -60,7 +53,6 @@ async function loadComments() {
   return true;
 }
 
-
 const routeMeta = {
   movies: { type: "movie", title: "فیلم‌های کره‌ای", code: "۰۱ — فیلم", icon: "clapperboard",
     desc: "زیرنویس فارسی فیلم‌های سینمایی کره‌ای، از اکشن تا درام، با ترجمه‌ی روان و هماهنگ با زمان‌بندی اصلی." },
@@ -82,9 +74,9 @@ const state = {
   selectedStars: 5,
   loaded: false,
   catalog: {
-    movies: { q: "", status: "all", sort: "latest" },
-    series: { q: "", status: "all", sort: "latest" },
-    shows: { q: "", status: "all", sort: "latest" }
+    movies: { q: "" },
+    series: { q: "" },
+    shows: { q: "" }
   }
 };
 
@@ -109,8 +101,6 @@ const $detailsPanel = document.querySelector("#details-panel");
 const $toast = document.querySelector("#toast");
 const $toastMsg = document.querySelector("#toast-msg");
 
-const $newsletterForm = document.querySelector("#newsletter-form");
-
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* =====================================================
@@ -129,10 +119,6 @@ function icons() { if (window.lucide) window.lucide.createIcons(); }
 
 function typeLabel(type) {
   return { movie: "فیلم", series: "سریال", show: "برنامه" }[type] || "";
-}
-
-function statusLabel(status) {
-  return status === "completed" ? "کامل" : "در حال ترجمه";
 }
 
 function starIcons(count) {
@@ -174,15 +160,10 @@ function mediaCard(item) {
          aria-label="مشاهده‌ی جزئیات ${escapeHTML(item.title)}">
       <img src="${item.image}" alt="پوستر ${escapeHTML(item.title)}" loading="lazy">
       <div class="card-top">
-        <span class="tag ${item.status}">${statusLabel(item.status)}</span>
         <button class="bookmark ${marked ? "active" : ""}" type="button" data-bookmark="${item.id}"
                 aria-label="${marked ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"}">
           <i data-lucide="bookmark"></i>
         </button>
-      </div>
-      <div class="card-caption">
-        <span class="card-timecode">${item.duration}</span>
-        <span class="card-rating"><i data-lucide="star"></i>${item.rating}</span>
       </div>
     </div>
     <div class="card-body">
@@ -190,7 +171,6 @@ function mediaCard(item) {
       <p class="card-title-en">${escapeHTML(item.titleEn)}</p>
       <div class="card-meta">
         <span><i data-lucide="tag"></i>${escapeHTML(item.genre.split("،")[0])}</span>
-        <span><i data-lucide="download"></i>${faNumber(item.downloads)}</span>
       </div>
     </div>
   </article>`;
@@ -231,27 +211,6 @@ function viewHome() {
   const latest = [...mediaItems].sort((a, b) => b.id - a.id).slice(0, 8);
 
   return `
-  <section class="hero">
-    <div class="hero-bg"><img src="${HERO_IMAGE}" alt=""></div>
-    <div class="wrap hero-inner">
-      <span class="hero-eyebrow"><span class="dot"></span>آرشیو زنده‌ی زیرنویس فارسی</span>
-      <div class="caption-bar">
-        <h1>هر دیالوگ، <b>درست سر وقت.</b></h1>
-      </div>
-      <p class="hero-sub">Healer Sub زیرنویس فارسی فیلم، سریال و برنامه‌های کره‌ای را با ترجمه‌ی دقیق و هماهنگ با زمان‌بندی اصلی منتشر می‌کند.</p>
-      <div class="hero-actions">
-        <a href="#/series" class="btn btn-gold"><i data-lucide="download"></i>جدیدترین زیرنویس‌ها</a>
-        <a href="#/comments" class="btn btn-outline"><i data-lucide="messages-square"></i>نظرات کاربران</a>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><strong>${faNumber(mediaItems.length)}+</strong><span>عنوان در آرشیو</span></div>
-        <div class="hero-stat"><strong>${faNumber(120)}+</strong><span>مترجم همکار</span></div>
-        <div class="hero-stat"><strong>${faNumber(180000)}+</strong><span>دانلود موفق</span></div>
-        <div class="hero-stat"><strong>روزانه</strong><span>به‌روزرسانی آرشیو</span></div>
-      </div>
-    </div>
-  </section>
-
   <section class="section section-line">
     <div class="wrap">
       <div class="section-head">
@@ -276,36 +235,6 @@ function viewHome() {
       </div>
       <div class="tiles">${categoryTile("movies")}${categoryTile("series")}${categoryTile("shows")}</div>
     </div>
-  </section>
-
-  <section class="section section-line">
-    <div class="wrap">
-      <div class="section-head">
-        <div>
-          <span class="cap">چرا Healer</span>
-          <h2 class="section-title">فرق ما همین جزئیات کوچیکه</h2>
-        </div>
-      </div>
-      <div class="features">
-        <div class="feature"><div class="feature-icon"><i data-lucide="languages"></i></div><h3>ترجمه‌ی طبیعی</h3><p>دیالوگ‌ها را جوری برمی‌گردانیم که حس گفت‌وگوی روزمره داشته باشد، نه ترجمه‌ی خشک کلمه‌به‌کلمه.</p></div>
-        <div class="feature"><div class="feature-icon"><i data-lucide="timer"></i></div><h3>هماهنگی دقیق زمان</h3><p>هر فایل با نسخه‌ی اصلی تطبیق داده می‌شود تا زیرنویس درست هم‌زمان با دیالوگ ظاهر شود.</p></div>
-        <div class="feature"><div class="feature-icon"><i data-lucide="zap"></i></div><h3>انتشار سریع</h3><p>قسمت‌های در حال پخش معمولاً کمتر از یک روز پس از انتشار اصلی آماده می‌شوند.</p></div>
-        <div class="feature"><div class="feature-icon"><i data-lucide="gift"></i></div><h3>آرشیو رایگان</h3><p>تمام زیرنویس‌ها بدون نیاز به عضویت یا هزینه در دسترس همه هستند.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section-tight">
-    <div class="wrap">
-      <div class="section-head">
-        <div>
-          <span class="cap">نظرات</span>
-          <h2 class="section-title">حرف کاربران Healer</h2>
-        </div>
-        <a href="#/comments" class="link-arrow">ثبت نظر<i data-lucide="arrow-left"></i></a>
-      </div>
-      <div class="comments-preview-grid">${state.comments.slice(0, 3).map(commentCard).join("")}</div>
-    </div>
   </section>`;
 }
 
@@ -322,12 +251,8 @@ function filteredCatalog(routeKey) {
       m.genre.toLowerCase().includes(q)
     );
   }
-  if (f.status !== "all") items = items.filter((m) => m.status === f.status);
-
-  if (f.sort === "rating") items = [...items].sort((a, b) => b.rating - a.rating);
-  else if (f.sort === "downloads") items = [...items].sort((a, b) => b.downloads - a.downloads);
-  else items = [...items].sort((a, b) => b.id - a.id);
-
+  
+  items = [...items].sort((a, b) => b.id - a.id);
   return items;
 }
 
@@ -341,7 +266,7 @@ function viewCatalog(routeKey) {
     : `<div class="empty">
          <i data-lucide="search-x"></i>
          <h3>چیزی پیدا نشد</h3>
-         <p>واژه‌ی دیگری امتحان کن یا فیلترها را پاک کن.</p>
+         <p>واژه‌ی دیگری امتحان کن.</p>
        </div>`;
 
   return `
@@ -358,25 +283,9 @@ function viewCatalog(routeKey) {
   <section class="section-tight">
     <div class="wrap">
       <div class="toolbar">
-        <label class="field">
+        <label class="field" style="max-width: 400px; width: 100%;">
           <i data-lucide="search"></i>
           <input type="search" id="catalog-search" placeholder="جست‌وجو در ${meta.title}..." value="${escapeHTML(f.q)}">
-        </label>
-        <label class="field">
-          <i data-lucide="filter"></i>
-          <select id="catalog-status">
-            <option value="all" ${f.status === "all" ? "selected" : ""}>همه‌ی وضعیت‌ها</option>
-            <option value="completed" ${f.status === "completed" ? "selected" : ""}>کامل</option>
-            <option value="ongoing" ${f.status === "ongoing" ? "selected" : ""}>در حال ترجمه</option>
-          </select>
-        </label>
-        <label class="field">
-          <i data-lucide="arrow-down-up"></i>
-          <select id="catalog-sort">
-            <option value="latest" ${f.sort === "latest" ? "selected" : ""}>جدیدترین</option>
-            <option value="rating" ${f.sort === "rating" ? "selected" : ""}>بیشترین امتیاز</option>
-            <option value="downloads" ${f.sort === "downloads" ? "selected" : ""}>پردانلودترین</option>
-          </select>
         </label>
       </div>
       <p class="result-line">${faNumber(items.length)} عنوان یافت شد</p>
@@ -586,17 +495,11 @@ function openDetails(id) {
       <h2 id="details-title">${escapeHTML(item.title)}</h2>
       <p class="details-en">${escapeHTML(item.titleEn)}</p>
       <div class="details-tags">
-        ${item.tags.map((t) => `<span>${escapeHTML(t)}</span>`).join("")}
         <span>${item.year}</span>
-        <span>${statusLabel(item.status)}</span>
       </div>
       <p class="details-desc">${escapeHTML(item.description)}</p>
       <ul class="details-info">
         <li><span>نوع اثر</span><span>${typeLabel(item.type)}</span></li>
-        <li><span>وضعیت زیرنویس</span><span>${escapeHTML(item.episodeLabel)}</span></li>
-        <li><span>مدت هر قسمت</span><span>${item.duration}</span></li>
-        <li><span>مترجم</span><span>${escapeHTML(item.translator)}</span></li>
-        <li><span>تعداد دانلود</span><span>${faNumber(item.downloads)}</span></li>
       </ul>
       <div class="details-actions">
         <button type="button" class="btn btn-gold" id="details-download"><i data-lucide="download"></i>دانلود زیرنویس</button>
@@ -613,9 +516,6 @@ function openDetails(id) {
   $detailsPanel.querySelector("#details-download").addEventListener("click", () => {
     if (item.subtitleLink) window.open(item.subtitleLink, "_blank", "noopener");
     showToast(`دانلود زیرنویس «${item.title}» شروع شد.`);
-    sb.from("titles").update({ downloads: item.downloads + 1 }).eq("id", item.id).then(({ error }) => {
-      if (!error) item.downloads += 1;
-    });
   });
   $detailsPanel.querySelector("#details-bookmark").addEventListener("click", () => {
     toggleBookmark(item.id);
@@ -667,13 +567,9 @@ document.addEventListener("keydown", (e) => {
 
 function bindCatalogControls(route) {
   const search = document.querySelector("#catalog-search");
-  const status = document.querySelector("#catalog-status");
-  const sort = document.querySelector("#catalog-sort");
   if (!search || !routeMeta[route]) return;
 
   search.addEventListener("input", (e) => { state.catalog[route].q = e.target.value; renderCatalogInPlace(route); });
-  status.addEventListener("change", (e) => { state.catalog[route].status = e.target.value; renderCatalogInPlace(route); });
-  sort.addEventListener("change", (e) => { state.catalog[route].sort = e.target.value; renderCatalogInPlace(route); });
 }
 
 function renderCatalogInPlace(route) {
@@ -732,23 +628,11 @@ function bindCommentForm() {
 }
 
 /* =====================================================
-   Newsletter form
-===================================================== */
-
-$newsletterForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const input = document.querySelector("#newsletter-email");
-  if (!input.value.trim()) return;
-  showToast("عضویت در خبرنامه با موفقیت ثبت شد.");
-  input.value = "";
-});
-
-/* =====================================================
    Init
 ===================================================== */
 
 async function init() {
-  render(); // نمایش وضعیت بارگذاری
+  render();
   const [titlesOk] = await Promise.all([loadTitles(), loadComments()]);
   state.loaded = true;
   state.loadFailed = !titlesOk;
