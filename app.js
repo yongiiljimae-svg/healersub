@@ -153,18 +153,11 @@ function closeOverlay(el) {
 ===================================================== */
 
 function mediaCard(item) {
-  const marked = state.bookmarks.has(item.id);
   return `
   <article class="card">
     <div class="card-poster" data-open="${item.id}" tabindex="0" role="button"
          aria-label="مشاهده‌ی جزئیات ${escapeHTML(item.title)}">
       <img src="${item.image}" alt="پوستر ${escapeHTML(item.title)}" loading="lazy">
-      <div class="card-top">
-        <button class="bookmark ${marked ? "active" : ""}" type="button" data-bookmark="${item.id}"
-                aria-label="${marked ? "حذف از علاقه‌مندی‌ها" : "افزودن به علاقه‌مندی‌ها"}">
-          <i data-lucide="bookmark"></i>
-        </button>
-      </div>
     </div>
     <div class="card-body">
       <h3 class="card-title">${escapeHTML(item.title)}</h3>
@@ -486,7 +479,6 @@ function openDetails(id) {
   const item = findItem(id);
   if (!item) return;
 
-  const marked = state.bookmarks.has(item.id);
 
   $detailsPanel.innerHTML = `
     <button class="icon-btn details-close" type="button" data-close-dialog aria-label="بستن"><i data-lucide="x"></i></button>
