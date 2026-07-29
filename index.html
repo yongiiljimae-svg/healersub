@@ -6,7 +6,6 @@
 <meta name="description" content="Healer Sub؛ مرجع دانلود جدیدترین زیرنویس فارسی فیلم، سریال و برنامه‌های کره‌ای با ترجمه روان و به‌روز.">
 <meta name="theme-color" content="#0b0d11">
 <title>Healer Sub | زیرنویس فیلم و سریال کره‌ای</title>
-<link rel="icon" type="image/png" href="logo.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,6 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="supabase-client.js" defer></script>
 <script src="app.js" defer></script>
+<link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
 
@@ -25,19 +25,18 @@
 <!-- ============ HEADER ============ -->
 <header class="site-header" id="site-header">
   <div class="wrap header-row">
-<a href="#/home" class="brand" aria-label="صفحه اصلی Healer Sub">
-  <img src="logo.png" alt="Healer Sub Logo" style="height: 64px !important; width: auto; filter: drop-shadow(0 2px 6px rgba(123, 212, 248, 0.3));">
-  <span class="brand-word">
-    <strong>Healer</strong><small>SUB</small>
-  </span>
-</a>
+    <a href="#/home" class="brand" aria-label="صفحه اصلی Healer Sub">
+      <img src="logo.png" alt="Healer Sub Logo" style="height: 42px; width: auto; filter: drop-shadow(0 2px 6px rgba(123, 212, 248, 0.3));">
+      <span class="brand-word">
+        <strong>Healer</strong><small>SUB</small>
+      </span>
+    </a>
 
     <nav class="nav-desktop" aria-label="منوی اصلی">
       <a href="#/home" data-route="home">خانه</a>
       <a href="#/movies" data-route="movies">فیلم‌ها</a>
       <a href="#/series" data-route="series">سریال‌ها</a>
       <a href="#/shows" data-route="shows">برنامه‌ها</a>
-      <a href="#/comments" data-route="comments">نظرات</a>
     </nav>
 
     <div class="header-tools">
@@ -47,7 +46,6 @@
       <button class="icon-btn" id="theme-toggle" type="button" aria-label="تغییر پوسته">
         <i data-lucide="moon"></i>
       </button>
-     
       <button class="icon-btn menu-toggle" id="menu-toggle" type="button" aria-label="منوی موبایل" aria-expanded="false">
         <i data-lucide="menu"></i>
       </button>
@@ -59,7 +57,6 @@
     <a href="#/movies" data-route="movies"><i data-lucide="clapperboard"></i>فیلم‌ها</a>
     <a href="#/series" data-route="series"><i data-lucide="tv"></i>سریال‌ها</a>
     <a href="#/shows" data-route="shows"><i data-lucide="mic-2"></i>برنامه‌ها</a>
-    <a href="#/comments" data-route="comments"><i data-lucide="messages-square"></i>نظرات کاربران</a>
   </nav>
 </header>
 
@@ -68,13 +65,25 @@
   <div id="app"></div>
 </main>
 
-  <!-- ============ FOOTER ============ -->
-<footer class="site-footer" style="padding: 24px 0; border-top: 1px solid rgba(255, 255, 255, 0.08); text-align: center;">
-  <div class="wrap" style="display: flex; justify-content: center; align-items: center;">
-    <a href="https://t.me/Hea1er_sub" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; color: #e2b714; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: opacity 0.2s;">
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer" style="padding: 30px 0 20px 0; border-top: 1px solid rgba(255, 255, 255, 0.08); text-align: center;">
+  <div class="wrap" style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;">
+    
+    <a href="https://t.me/Hea1er_sub" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: opacity 0.2s;">
       <i data-lucide="send"></i>
       <span>عضویت در کانال تلگرام Healer Sub</span>
     </a>
+
+    <!-- بخش آمار بازدید -->
+    <div style="display: flex; gap: 24px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); padding-top: 16px; width: 100%; max-width: 350px; justify-content: center;">
+      <span style="display: flex; align-items: center; gap: 6px;">
+        <i data-lucide="users" style="width: 16px; height: 16px;"></i> بازدید امروز: <b id="stat-today" style="color: var(--text);">...</b>
+      </span>
+      <span style="display: flex; align-items: center; gap: 6px;">
+        <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> بازدید این ماه: <b id="stat-month" style="color: var(--text);">...</b>
+      </span>
+    </div>
+
   </div>
 </footer>
   
