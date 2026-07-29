@@ -37,7 +37,6 @@ button{ cursor:pointer; }
 .wrap{ max-width:var(--wrap); margin:0 auto; padding:0 20px; }
 .skip-link{ position:absolute; right:-999px; }
 .skip-link:focus{ right:12px; top:12px; background:var(--gold); color:#0b0d11; padding:8px 14px; border-radius:8px; z-index:999; }
-.grain{ position:fixed; inset:0; pointer-events:none; opacity:.03; background:radial-gradient(circle,#fff 1px,transparent 1px); background-size:3px 3px; z-index:1; }
 .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; }
 
 /* ---------- Buttons ---------- */
