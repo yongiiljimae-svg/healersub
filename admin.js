@@ -98,7 +98,7 @@ $loginForm.addEventListener("submit", async (e) => {
     await loadAll();
   } catch (err) {
     console.error("Login error:", err);
-    $loginError.textContent = "خطا در اتصال به Supabase. کلید anon یا شبکه را بررسی کن.";
+    $loginError.textContent = "خطا در اتصال به Supabase.";
     $loginError.hidden = false;
   }
 });
@@ -109,7 +109,7 @@ document.querySelector("#logout-btn").addEventListener("click", async () => {
 });
 
 /* =====================================================
-   Tabs
+   Tabs & Data
 ===================================================== */
 
 document.querySelectorAll(".admin-tab").forEach((btn) => {
@@ -121,10 +121,6 @@ document.querySelectorAll(".admin-tab").forEach((btn) => {
   });
 });
 
-/* =====================================================
-   Load data
-===================================================== */
-
 async function loadAll() {
   await Promise.all([loadTitles(), loadComments()]);
   renderTitlesList();
@@ -133,19 +129,15 @@ async function loadAll() {
 
 async function loadTitles() {
   const { data, error } = await sb.from("titles").select("*").order("created_at", { ascending: false });
-  if (error) { showToast("خطا در بارگذاری پروژه‌ها."); console.error(error); return; }
+  if (error) { showToast("خطا در بارگذاری پروژه‌ها."); return; }
   titles = data || [];
 }
 
 async function loadComments() {
   const { data, error } = await sb.from("comments").select("*").order("created_at", { ascending: false });
-  if (error) { showToast("خطا در بارگذاری نظرات."); console.error(error); return; }
+  if (error) { showToast("خطا در بارگذاری نظرات."); return; }
   comments = data || [];
 }
-
-/* =====================================================
-   Titles: render list
-===================================================== */
 
 function renderTitlesList() {
   if (!titles.length) {
@@ -171,8 +163,39 @@ function renderTitlesList() {
 }
 
 /* =====================================================
-   Titles: add / edit form
+   Titles: Episode Logic & Form
 ===================================================== */
+
+const $typeSelect = document.querySelector("#t-type");
+const $linkMovieWrap = document.querySelector("#link-movie-wrap");
+const $linkSeriesWrap = document.querySelector("#link-series-wrap");
+const $episodesContainer = document.querySelector("#episodes-container");
+const $addEpBtn = document.querySelector("#add-ep-btn");
+
+$typeSelect.addEventListener("change", (e) => {
+  const isSeries = e.target.value !== "movie";
+  $linkMovieWrap.hidden = isSeries;
+  $linkSeriesWrap.hidden = !isSeries;
+});
+
+function createEpRow(label = "", link = "") {
+  const row = document.createElement("div");
+  row.className = "ep-row";
+  row.style.display = "flex";
+  row.style.gap = "8px";
+  row.innerHTML = `
+    <input type="text" placeholder="مثلاً: قسمت 1" value="${escapeHTML(label)}" class="ep-label" required style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
+    <input type="url" placeholder="لینک زیرنویس" value="${link}" class="ep-link" required style="flex: 2; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
+    <button type="button" class="btn danger btn-sm del-ep" style="border-radius: 8px; padding: 0 12px;"><i data-lucide="trash"></i></button>
+  `;
+  row.querySelector(".del-ep").onclick = () => row.remove();
+  return row;
+}
+
+$addEpBtn.addEventListener("click", () => {
+  $episodesContainer.appendChild(createEpRow());
+  icons();
+});
 
 function fieldRefs() {
   return {
@@ -210,6 +233,16 @@ function startEdit(id) {
     $posterPreview.hidden = true;
   }
 
+  // Load episodes
+  $episodesContainer.innerHTML = "";
+  if (t.type !== "movie" && t.episodes && t.episodes.length) {
+    t.episodes.forEach(ep => $episodesContainer.appendChild(createEpRow(ep.label, ep.link)));
+  } else if (t.type !== "movie") {
+    $episodesContainer.appendChild(createEpRow());
+  }
+
+  $typeSelect.dispatchEvent(new Event("change"));
+
   $formHeading.textContent = `ویرایش «${t.title}»`;
   $submitBtn.innerHTML = '<i data-lucide="save"></i>ذخیره تغییرات';
   $resetFormBtn.hidden = false;
@@ -221,6 +254,8 @@ function resetForm() {
   editingId = null;
   $titleForm.reset();
   $posterPreview.hidden = true;
+  $episodesContainer.innerHTML = "";
+  $typeSelect.dispatchEvent(new Event("change"));
   $formHeading.textContent = "افزودن پروژه جدید";
   $submitBtn.innerHTML = '<i data-lucide="plus"></i>افزودن پروژه';
   $resetFormBtn.hidden = true;
@@ -244,30 +279,45 @@ $titleForm.addEventListener("submit", async (e) => {
   $titleFormError.hidden = true;
   const f = fieldRefs();
 
-  if (!f.title.value.trim() || !f.subtitleLink.value.trim()) {
-    $titleFormError.textContent = "عنوان و لینک زیرنویس اجباری هستند.";
-    $titleFormError.hidden = false;
-    return;
+  if (!f.title.value.trim()) {
+    $titleFormError.textContent = "عنوان اجباری است.";
+    $titleFormError.hidden = false; return;
   }
-
-  $submitBtn.disabled = true;
 
   const payload = {
     type: f.type.value,
+    status: "ongoing", // جلوگیری از خطای دیتابیس
     title: f.title.value.trim(),
     title_en: f.titleEn.value.trim(),
     genre: f.genre.value.trim(),
     year: f.year.value ? Number(f.year.value) : null,
-    subtitle_link: f.subtitleLink.value.trim(),
-    description: f.description.value.trim()
+    description: f.description.value.trim(),
+    poster_url: f.poster.value.trim() || null
   };
 
-  const posterUrl = f.poster.value.trim();
-  if (posterUrl) {
-    payload.poster_url = posterUrl;
+  if (f.type.value === "movie") {
+    if (!f.subtitleLink.value.trim()) {
+      $titleFormError.textContent = "لینک زیرنویس فیلم را وارد کنید.";
+      $titleFormError.hidden = false; return;
+    }
+    payload.subtitle_link = f.subtitleLink.value.trim();
+    payload.episodes = [];
   } else {
-    payload.poster_url = null;
+    payload.subtitle_link = "#"; // برای رفع ارور required دیتابیس
+    let eps = [];
+    document.querySelectorAll(".ep-row").forEach(r => {
+       const lbl = r.querySelector(".ep-label").value.trim();
+       const lnk = r.querySelector(".ep-link").value.trim();
+       if(lbl && lnk) eps.push({ label: lbl, link: lnk });
+    });
+    if(eps.length === 0) {
+      $titleFormError.textContent = "حداقل یک قسمت برای سریال وارد کنید.";
+      $titleFormError.hidden = false; return;
+    }
+    payload.episodes = eps;
   }
+
+  $submitBtn.disabled = true;
 
   try {
     let error;
@@ -295,10 +345,8 @@ async function deleteTitle(id) {
   const t = titles.find((x) => x.id === id);
   if (!t) return;
   if (!confirm(`«${t.title}» حذف بشه؟ این کار برگشت‌ناپذیره.`)) return;
-
   const { error } = await sb.from("titles").delete().eq("id", id);
-  if (error) { showToast("حذف با خطا مواجه شد."); console.error(error); return; }
-
+  if (error) { showToast("حذف با خطا مواجه شد."); return; }
   showToast("پروژه حذف شد.");
   await loadTitles();
   renderTitlesList();
@@ -336,8 +384,7 @@ function renderCommentsList() {
 }
 
 async function approveComment(id) {
-  const { error } = await sb.from("comments").update({ approved: true }).eq("id", id);
-  if (error) { showToast("تایید با خطا مواجه شد."); return; }
+  await sb.from("comments").update({ approved: true }).eq("id", id);
   showToast("نظر تایید شد.");
   await loadComments();
   renderCommentsList();
@@ -345,15 +392,10 @@ async function approveComment(id) {
 
 async function deleteComment(id) {
   if (!confirm("این نظر حذف بشه؟")) return;
-  const { error } = await sb.from("comments").delete().eq("id", id);
-  if (error) { showToast("حذف با خطا مواجه شد."); return; }
+  await sb.from("comments").delete().eq("id", id);
   showToast("نظر حذف شد.");
   await loadComments();
   renderCommentsList();
 }
-
-/* =====================================================
-   Init
-===================================================== */
 
 checkSession();
