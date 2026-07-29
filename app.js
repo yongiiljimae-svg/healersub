@@ -479,7 +479,6 @@ function openDetails(id) {
   const item = findItem(id);
   if (!item) return;
 
-
   $detailsPanel.innerHTML = `
     <button class="icon-btn details-close" type="button" data-close-dialog aria-label="بستن"><i data-lucide="x"></i></button>
     <div class="details-poster"><img src="${item.image}" alt="پوستر ${escapeHTML(item.title)}"></div>
@@ -495,9 +494,6 @@ function openDetails(id) {
       </ul>
       <div class="details-actions">
         <button type="button" class="btn btn-gold" id="details-download"><i data-lucide="download"></i>دانلود زیرنویس</button>
-        <button type="button" class="btn btn-outline" id="details-bookmark">
-          <i data-lucide="bookmark"></i>${marked ? "حذف از علاقه‌مندی" : "افزودن به علاقه‌مندی"}
-        </button>
       </div>
     </div>`;
 
@@ -508,10 +504,6 @@ function openDetails(id) {
   $detailsPanel.querySelector("#details-download").addEventListener("click", () => {
     if (item.subtitleLink) window.open(item.subtitleLink, "_blank", "noopener");
     showToast(`دانلود زیرنویس «${item.title}» شروع شد.`);
-  });
-  $detailsPanel.querySelector("#details-bookmark").addEventListener("click", () => {
-    toggleBookmark(item.id);
-    closeOverlay($detailsDialog);
   });
 }
 
