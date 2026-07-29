@@ -1,7 +1,7 @@
 "use strict";
 
 /* =====================================================
-   Data — loaded live from Supabase (see supabase-client.js)
+   Data — loaded live from Supabase
 ===================================================== */
 
 let mediaItems = [];
@@ -16,12 +16,13 @@ function mapTitleRow(r) {
     genre: r.genre || "",
     image: r.poster_url || HERO_IMAGE,
     subtitleLink: r.subtitle_link || "",
-    description: r.description || ""
+    description: r.description || "",
+    downloads: r.downloads || 0
   };
 }
 
 function mapCommentRow(r) {
-  return { id: r.id, name: r.name, rating: r.rating, text: r.text, date: relativeDate(r.created_at) };
+  return { id: r.id, title_id: r.title_id, name: r.name, rating: r.rating, text: r.text, date: relativeDate(r.created_at) };
 }
 
 function relativeDate(iso) {
@@ -47,7 +48,7 @@ async function loadTitles() {
 
 async function loadComments() {
   const { data, error } = await sb.from("comments")
-    .select("*").eq("approved", true).order("created_at", { ascending: true });
+    .select("*").eq("approved", true).order("created_at", { ascending: false });
   if (error) { console.error("loadComments:", error); return false; }
   state.comments = (data || []).map(mapCommentRow);
   return true;
@@ -65,13 +66,11 @@ const routeMeta = {
 const HERO_IMAGE = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1600&q=80";
 
 /* =====================================================
-   In-memory state (no localStorage — kept in JS only)
+   In-memory state
 ===================================================== */
 
 const state = {
-  bookmarks: new Set(),
   comments: [],
-  selectedStars: 5,
   loaded: false,
   catalog: {
     movies: { q: "" },
@@ -186,13 +185,13 @@ function categoryTile(key) {
 
 function commentCard(c) {
   return `
-  <article class="comment-card">
-    <div class="comment-top">
-      <div class="avatar">${escapeHTML(c.name.charAt(0))}</div>
-      <div class="comment-who"><strong>${escapeHTML(c.name)}</strong><span>${escapeHTML(c.date)}</span></div>
+  <article class="comment-card" style="margin-bottom: 12px; padding: 14px;">
+    <div class="comment-top" style="margin-bottom: 6px;">
+      <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">${escapeHTML(c.name.charAt(0))}</div>
+      <div class="comment-who"><strong style="font-size: 0.9rem;">${escapeHTML(c.name)}</strong><span style="font-size: 0.7rem;">${escapeHTML(c.date)}</span></div>
     </div>
-    <div class="stars">${starIcons(c.rating)}</div>
-    <p>${escapeHTML(c.text)}</p>
+    <div class="stars" style="margin-bottom: 4px;">${starIcons(c.rating)}</div>
+    <p style="font-size: 0.85rem;">${escapeHTML(c.text)}</p>
   </article>`;
 }
 
@@ -287,50 +286,6 @@ function viewCatalog(routeKey) {
   </section>`;
 }
 
-function viewComments() {
-  const list = [...state.comments].reverse();
-  return `
-  <section class="page-hero">
-    <div class="wrap page-hero-row">
-      <div>
-        <span class="cap">نظرات</span>
-        <h1 class="page-title">نظرات کاربران</h1>
-        <p class="page-desc">تجربه‌ات از استفاده از Healer Sub را با بقیه‌ی کیدرامرها به اشتراک بگذار.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section-tight">
-    <div class="wrap comments-layout">
-      <div class="comments-list">${list.map(commentCard).join("")}</div>
-
-      <div class="comment-form-card">
-        <h2>ثبت نظر جدید</h2>
-        <p>نظر تو همین‌جا، تا پایان این نشست، ذخیره می‌شود.</p>
-        <form id="comment-form" novalidate>
-          <div class="field-group">
-            <label for="c-name">نام</label>
-            <input id="c-name" type="text" placeholder="مثلاً سارا" required>
-          </div>
-          <div class="field-group">
-            <label>امتیاز</label>
-            <div class="rating-pick" id="rating-pick">
-              ${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-star="${n}" class="${n <= state.selectedStars ? "on" : ""}" aria-label="${n} ستاره"><i data-lucide="star"></i></button>`).join("")}
-            </div>
-          </div>
-          <div class="field-group">
-            <label for="c-text">نظر</label>
-            <textarea id="c-text" placeholder="نظرت رو بنویس..." required></textarea>
-          </div>
-          <button type="submit" class="btn btn-gold" style="width:100%">
-            <i data-lucide="send"></i>ثبت نظر
-          </button>
-        </form>
-      </div>
-    </div>
-  </section>`;
-}
-
 /* =====================================================
    Router
 ===================================================== */
@@ -369,7 +324,6 @@ function render() {
 
   if (route === "home") $app.innerHTML = viewHome();
   else if (routeMeta[route]) $app.innerHTML = viewCatalog(route);
-  else if (route === "comments") $app.innerHTML = viewComments();
   else $app.innerHTML = viewHome();
 
   document.querySelectorAll("[data-route]").forEach((a) => {
@@ -379,7 +333,6 @@ function render() {
   window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "instant" });
   icons();
   bindCatalogControls(route);
-  bindCommentForm();
 }
 
 window.addEventListener("hashchange", render);
@@ -472,12 +425,18 @@ document.querySelectorAll("[data-close-dialog]").forEach((btn) => {
 });
 
 /* =====================================================
-   Details dialog
+   Details dialog & Comments
 ===================================================== */
 
 function openDetails(id) {
   const item = findItem(id);
   if (!item) return;
+
+  // فیلتر کردن نظرات برای این پروژه خاص
+  const projectComments = state.comments.filter((c) => c.title_id === item.id);
+  const commentsHtml = projectComments.length 
+    ? projectComments.map(commentCard).join("") 
+    : `<p style="color: var(--muted); font-size: 0.85rem; padding: 10px 0;">هنوز نظری ثبت نشده. اولین نفر باش!</p>`;
 
   $detailsPanel.innerHTML = `
     <button class="icon-btn details-close" type="button" data-close-dialog aria-label="بستن"><i data-lucide="x"></i></button>
@@ -491,47 +450,108 @@ function openDetails(id) {
       <p class="details-desc">${escapeHTML(item.description)}</p>
       <ul class="details-info">
         <li><span>نوع اثر</span><span>${typeLabel(item.type)}</span></li>
+        <li><span>تعداد دانلود</span><span id="dl-count-${item.id}">${faNumber(item.downloads)}</span></li>
       </ul>
       <div class="details-actions">
         <button type="button" class="btn btn-gold" id="details-download"><i data-lucide="download"></i>دانلود زیرنویس</button>
       </div>
+
+      <hr style="border-color: var(--border); margin: 30px 0 24px;">
+
+      <h3 style="font-size: 1.05rem; margin-bottom: 16px;">نظرات کاربران</h3>
+      <div class="project-comments-list" style="margin-bottom: 24px;">
+        ${commentsHtml}
+      </div>
+
+      <div class="comment-form-card" style="position: static; padding: 20px; background: rgba(0,0,0,0.2);">
+        <h4 style="margin: 0 0 8px; font-size: 0.95rem;">ثبت نظر جدید</h4>
+        <p style="color: var(--muted); font-size: 0.8rem; margin: 0 0 16px;">نظرت پس از تایید مدیر برای این اثر نمایش داده می‌شود.</p>
+        <form id="project-comment-form" novalidate>
+          <div class="field-group" style="margin-bottom: 14px;">
+            <input id="c-name" type="text" placeholder="نام شما" required style="width:100%; background:var(--bg); border:1px solid var(--border); padding:10px 14px; border-radius:10px; color:var(--text);">
+          </div>
+          <div class="field-group" style="margin-bottom: 14px; display:flex; align-items:center; gap:10px;">
+            <label style="font-size: 0.85rem; color: var(--muted);">امتیاز:</label>
+            <div class="rating-pick" id="modal-rating-pick">
+              ${[1, 2, 3, 4, 5].map((n) => `<button type="button" data-star="${n}" class="${n <= 5 ? "on" : ""}" aria-label="${n} ستاره"><i data-lucide="star"></i></button>`).join("")}
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom: 14px;">
+            <textarea id="c-text" placeholder="نظرت رو بنویس..." required rows="3" style="width:100%; background:var(--bg); border:1px solid var(--border); padding:10px 14px; border-radius:10px; color:var(--text); resize:vertical;"></textarea>
+          </div>
+          <button type="submit" class="btn btn-gold" style="width:100%">
+            <i data-lucide="send"></i>ثبت نظر
+          </button>
+        </form>
+      </div>
+
     </div>`;
 
   icons();
   openOverlay($detailsDialog);
 
   $detailsPanel.querySelector("[data-close-dialog]").addEventListener("click", () => closeOverlay($detailsDialog));
-  $detailsPanel.querySelector("#details-download").addEventListener("click", () => {
+  
+  $detailsPanel.querySelector("#details-download").addEventListener("click", async () => {
     if (item.subtitleLink) window.open(item.subtitleLink, "_blank", "noopener");
     showToast(`دانلود زیرنویس «${item.title}» شروع شد.`);
+    
+    const newDownloads = item.downloads + 1;
+    const { error } = await sb.from("titles").update({ downloads: newDownloads }).eq("id", item.id);
+    if (!error) {
+      item.downloads = newDownloads;
+      const countEl = $detailsPanel.querySelector(`#dl-count-${item.id}`);
+      if (countEl) countEl.textContent = faNumber(newDownloads);
+    }
+  });
+
+  // منطق فرم نظردهی مودال
+  let selectedStars = 5;
+  const ratingBtns = $detailsPanel.querySelectorAll("#modal-rating-pick [data-star]");
+  ratingBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedStars = Number(btn.dataset.star);
+      ratingBtns.forEach((b) => b.classList.toggle("on", Number(b.dataset.star) <= selectedStars));
+    });
+  });
+
+  const form = $detailsPanel.querySelector("#project-comment-form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = form.querySelector("#c-name").value.trim();
+    const text = form.querySelector("#c-text").value.trim();
+    if (!name || !text) { showToast("لطفاً نام و متن نظر را کامل کن."); return; }
+
+    const submitBtn = form.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+
+    const { error } = await sb.from("comments").insert({
+      title_id: item.id,
+      name, rating: selectedStars, text, approved: false
+    });
+
+    submitBtn.disabled = false;
+
+    if (error) {
+      console.error("submit comment:", error);
+      showToast("ثبت نظر با خطا مواجه شد. دوباره امتحان کن.");
+      return;
+    }
+
+    form.reset();
+    selectedStars = 5;
+    ratingBtns.forEach((b) => b.classList.toggle("on", true));
+    showToast("نظر تو ثبت شد و پس از تایید مدیریت نمایش داده می‌شود.");
   });
 }
 
 $detailsDialog.addEventListener("click", (e) => { if (e.target === $detailsDialog) closeOverlay($detailsDialog); });
 
 /* =====================================================
-   Bookmarks
-===================================================== */
-
-function toggleBookmark(id) {
-  if (state.bookmarks.has(id)) {
-    state.bookmarks.delete(id);
-    showToast("از علاقه‌مندی‌ها حذف شد.");
-  } else {
-    state.bookmarks.add(id);
-    showToast("به علاقه‌مندی‌ها اضافه شد.");
-  }
-  render();
-}
-
-/* =====================================================
    Global click delegation (cards + search results)
 ===================================================== */
 
 document.addEventListener("click", (e) => {
-  const bookmarkBtn = e.target.closest("[data-bookmark]");
-  if (bookmarkBtn) { toggleBookmark(Number(bookmarkBtn.dataset.bookmark)); return; }
-
   const opener = e.target.closest("[data-open]");
   if (opener) {
     if (opener.dataset.closeSearch) closeOverlay($searchDialog);
@@ -546,7 +566,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* =====================================================
-   Catalog controls (re-bound after every render)
+   Catalog controls
 ===================================================== */
 
 function bindCatalogControls(route) {
@@ -568,47 +588,37 @@ function renderCatalogInPlace(route) {
 }
 
 /* =====================================================
-   Comment form
+   Visitor Tracking (Supabase)
 ===================================================== */
 
-function bindCommentForm() {
-  const form = document.querySelector("#comment-form");
-  if (!form) return;
-
-  document.querySelectorAll("#rating-pick [data-star]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.selectedStars = Number(btn.dataset.star);
-      document.querySelectorAll("#rating-pick [data-star]").forEach((b) => {
-        b.classList.toggle("on", Number(b.dataset.star) <= state.selectedStars);
-      });
-    });
-  });
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.querySelector("#c-name").value.trim();
-    const text = document.querySelector("#c-text").value.trim();
-    if (!name || !text) { showToast("لطفاً نام و متن نظر را کامل کن."); return; }
-
-    const submitBtn = form.querySelector("button[type=submit]");
-    submitBtn.disabled = true;
-
-    const { error } = await sb.from("comments").insert({
-      name, rating: state.selectedStars, text, approved: false
-    });
-
-    submitBtn.disabled = false;
-
-    if (error) {
-      console.error("submit comment:", error);
-      showToast("ثبت نظر با خطا مواجه شد. دوباره امتحان کن.");
-      return;
+async function trackVisitors() {
+  try {
+    // اگر کاربر در این تب هنوز ثبت نشده بود، یک بازدید ثبت کن
+    if (!sessionStorage.getItem('visited')) {
+      await sb.from("visits").insert({});
+      sessionStorage.setItem('visited', 'true');
     }
 
-    form.reset();
-    state.selectedStars = 5;
-    showToast("نظر تو ثبت شد و پس از تایید نمایش داده می‌شود.");
-  });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    // دریافت آمار از دیتابیس
+    const [todayRes, monthRes] = await Promise.all([
+      sb.from("visits").select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString()),
+      sb.from("visits").select('*', { count: 'exact', head: true }).gte('created_at', firstOfMonth.toISOString())
+    ]);
+
+    const todayEl = document.getElementById('stat-today');
+    const monthEl = document.getElementById('stat-month');
+    
+    if(todayEl) todayEl.textContent = faNumber(todayRes.count || 0);
+    if(monthEl) monthEl.textContent = faNumber(monthRes.count || 0);
+
+  } catch (err) {
+    console.error("خطا در شمارشگر بازدید:", err);
+  }
 }
 
 /* =====================================================
@@ -621,6 +631,7 @@ async function init() {
   state.loaded = true;
   state.loadFailed = !titlesOk;
   render();
+  trackVisitors(); // اجرای شمارشگر بازدید به صورت بی‌صدا
 }
 
 init();
