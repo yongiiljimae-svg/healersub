@@ -1,23 +1,24 @@
 :root{
-  --bg:#0b0d11;
-  --bg-soft:#12151b;
-  --card:#161a22;
-  --border:rgba(255,255,255,.08);
-  --text:#f2f3f5;
-  --muted:#9aa1ad;
-  --gold:#d4af37;
-  --gold-soft:rgba(212,175,55,.15);
-  --radius:14px;
-  --wrap:1180px;
+  --bg: #070b14; /* پس‌زمینه سورمه‌ای بسیار تیره */
+  --bg-soft: #0c1322; /* پس‌زمینه کمی روشن‌تر برای فوتر */
+  --card: #111a2e; /* رنگ کارت‌ها */
+  --border: rgba(123, 212, 248, 0.12); /* خطوط حاشیه با هاله آبی یخی */
+  --text: #f2f3f5;
+  --muted: #8a9bb3; /* رنگ متن‌های کمرنگ (خاکستری متمایل به آبی) */
+  --gold: #7bd4f8; /* آبی یخی جایگزین رنگ زرد/طلایی شد */
+  --gold-soft: rgba(123, 212, 248, 0.15); /* هاله روشن آبی یخی */
+  --radius: 14px;
+  --wrap: 1180px;
 }
 [data-theme="light"]{
-  --bg:#f7f6f3;
-  --bg-soft:#efeee9;
-  --card:#ffffff;
-  --border:rgba(0,0,0,.08);
-  --text:#161a22;
-  --muted:#6b7280;
-  --gold-soft:rgba(212,175,55,.18);
+  --bg: #f2f7fc;
+  --bg-soft: #e6f0fa;
+  --card: #ffffff;
+  --border: rgba(47, 161, 214, 0.15);
+  --text: #161a22;
+  --muted: #627794;
+  --gold: #2fa1d6; /* آبی یخی تیره‌تر برای تم روشن که خوانا باشد */
+  --gold-soft: rgba(47, 161, 214, 0.15);
 }
 
 *{ box-sizing:border-box; }
