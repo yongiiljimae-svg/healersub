@@ -84,14 +84,6 @@
         </div>
 
         <div class="field-group">
-          <label for="t-status">وضعیت</label>
-          <select id="t-status" required>
-            <option value="ongoing">در حال ترجمه</option>
-            <option value="completed">کامل</option>
-          </select>
-        </div>
-
-        <div class="field-group">
           <label for="t-title">عنوان (فارسی)</label>
           <input id="t-title" type="text" required>
         </div>
@@ -111,36 +103,6 @@
           <input id="t-year" type="number" placeholder="1403">
         </div>
 
-        <div class="field-group">
-          <label for="t-tags">برچسب‌ها (با ، جدا کن)</label>
-          <input id="t-tags" type="text" placeholder="فانتزی، معمایی">
-        </div>
-
-        <div class="field-group">
-          <label for="t-rating">امتیاز</label>
-          <input id="t-rating" type="number" step="0.1" min="0" max="10" placeholder="8.5">
-        </div>
-
-        <div class="field-group">
-          <label for="t-episode">وضعیت زیرنویس / قسمت</label>
-          <input id="t-episode" type="text" placeholder="قسمت ۸ از ۱۲">
-        </div>
-
-        <div class="field-group">
-          <label for="t-duration">مدت هر قسمت</label>
-          <input id="t-duration" type="text" placeholder="۰۰:۵۵:۰۰">
-        </div>
-
-        <div class="field-group">
-          <label for="t-translator">مترجم</label>
-          <input id="t-translator" type="text">
-        </div>
-
-        <div class="field-group">
-          <label for="t-downloads">تعداد دانلود اولیه</label>
-          <input id="t-downloads" type="number" min="0" value="0">
-        </div>
-
         <div class="field-group admin-span-2">
           <label for="t-subtitle-link">لینک زیرنویس</label>
           <input id="t-subtitle-link" type="url" placeholder="https://..." required>
@@ -152,8 +114,8 @@
         </div>
 
         <div class="field-group admin-span-2">
-          <label for="t-poster">پوستر</label>
-          <input id="t-poster" type="file" accept="image/*">
+          <label for="t-poster">آدرس پوستر (URL)</label>
+          <input id="t-poster" type="url" placeholder="آدرس تصویر آپلود شده را اینجا وارد کنید">
           <div class="admin-poster-preview" id="poster-preview" hidden>
             <img id="poster-preview-img" alt="پیش‌نمایش پوستر">
           </div>
