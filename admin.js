@@ -1,11 +1,5 @@
 "use strict";
 
-/* =====================================================
-   Admin panel — auth + CRUD, talks directly to Supabase.
-   Security is enforced server-side by RLS (supabase-schema.sql):
-   anonymous users can never write, no matter what this file does.
-===================================================== */
-
 let titles = [];
 let comments = [];
 let editingId = null;
@@ -55,11 +49,19 @@ const typeLabel = (t) => ({ movie: "فیلم", series: "سریال", show: "بر
 ===================================================== */
 
 async function checkSession() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    showDashboard(session.user.email);
-    await loadAll();
-  } else {
+  try {
+    const { data: { session }, error } = await sb.auth.getSession();
+    if (error) throw error;
+    if (session) {
+      showDashboard(session.user.email);
+      await loadAll();
+    } else {
+      showLogin();
+    }
+  } catch (err) {
+    console.error("checkSession error:", err);
+    $loginError.textContent = "اتصال به سرور برقرار نشد. کلید API یا شبکه را بررسی کن.";
+    $loginError.hidden = false;
     showLogin();
   }
 }
@@ -81,14 +83,24 @@ $loginForm.addEventListener("submit", async (e) => {
   const email = document.querySelector("#login-email").value.trim();
   const password = document.querySelector("#login-password").value;
 
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) {
-    $loginError.textContent = "ایمیل یا رمز عبور اشتباه است.";
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      if (error.message && error.message.toLowerCase().includes("email not confirmed")) {
+        $loginError.textContent = "ایمیل هنوز تأیید نشده است. لطفاً inbox خود را چک کنید.";
+      } else {
+        $loginError.textContent = "ایمیل یا رمز عبور اشتباه است.";
+      }
+      $loginError.hidden = false;
+      return;
+    }
+    showDashboard(data.user.email);
+    await loadAll();
+  } catch (err) {
+    console.error("Login error:", err);
+    $loginError.textContent = "خطا در اتصال به Supabase. کلید anon یا شبکه را بررسی کن.";
     $loginError.hidden = false;
-    return;
   }
-  showDashboard(data.user.email);
-  await loadAll();
 });
 
 document.querySelector("#logout-btn").addEventListener("click", async () => {
