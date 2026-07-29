@@ -104,11 +104,6 @@
         </div>
 
         <div class="field-group admin-span-2">
-          <label for="t-subtitle-link">لینک زیرنویس</label>
-          <input id="t-subtitle-link" type="url" placeholder="https://..." required>
-        </div>
-
-        <div class="field-group admin-span-2">
           <label for="t-description">توضیحات</label>
           <textarea id="t-description" rows="3"></textarea>
         </div>
@@ -120,6 +115,21 @@
             <img id="poster-preview-img" alt="پیش‌نمایش پوستر">
           </div>
         </div>
+
+        <!-- منطق جدید لینک‌ها -->
+        <div class="field-group admin-span-2" id="link-movie-wrap">
+          <label for="t-subtitle-link">لینک دانلود زیرنویس (برای فیلم)</label>
+          <input id="t-subtitle-link" type="url" placeholder="https://...">
+        </div>
+
+        <div class="field-group admin-span-2" id="link-series-wrap" hidden style="background: rgba(0,0,0,0.1); padding: 16px; border-radius: 12px; border: 1px solid var(--border);">
+          <label style="margin-bottom: 12px; display: block;">لیست قسمت‌ها (برای سریال/برنامه)</label>
+          <div id="episodes-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;"></div>
+          <button type="button" class="btn btn-outline btn-sm" id="add-ep-btn" style="width: max-content;">
+            <i data-lucide="plus"></i>افزودن قسمت جدید
+          </button>
+        </div>
+
       </div>
 
       <p class="admin-error" id="title-form-error" hidden></p>
