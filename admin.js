@@ -177,19 +177,13 @@ function renderTitlesList() {
 function fieldRefs() {
   return {
     type: document.querySelector("#t-type"),
-    status: document.querySelector("#t-status"),
     title: document.querySelector("#t-title"),
     titleEn: document.querySelector("#t-title-en"),
     genre: document.querySelector("#t-genre"),
     year: document.querySelector("#t-year"),
-    tags: document.querySelector("#t-tags"),
-    rating: document.querySelector("#t-rating"),
-    episode: document.querySelector("#t-episode"),
-    duration: document.querySelector("#t-duration"),
-    translator: document.querySelector("#t-translator"),
-    downloads: document.querySelector("#t-downloads"),
     subtitleLink: document.querySelector("#t-subtitle-link"),
-    description: document.querySelector("#t-description")
+    description: document.querySelector("#t-description"),
+    poster: document.querySelector("#t-poster")
   };
 }
 
@@ -198,25 +192,21 @@ function startEdit(id) {
   if (!t) return;
   editingId = id;
   const f = fieldRefs();
+  
   f.type.value = t.type;
-  f.status.value = t.status;
   f.title.value = t.title || "";
   f.titleEn.value = t.title_en || "";
   f.genre.value = t.genre || "";
   f.year.value = t.year || "";
-  f.tags.value = (t.tags || []).join("، ");
-  f.rating.value = t.rating || "";
-  f.episode.value = t.episode_label || "";
-  f.duration.value = t.duration || "";
-  f.translator.value = t.translator || "";
-  f.downloads.value = t.downloads || 0;
   f.subtitleLink.value = t.subtitle_link || "";
   f.description.value = t.description || "";
 
   if (t.poster_url) {
+    f.poster.value = t.poster_url;
     $posterPreviewImg.src = t.poster_url;
     $posterPreview.hidden = false;
   } else {
+    f.poster.value = "";
     $posterPreview.hidden = true;
   }
 
@@ -231,7 +221,6 @@ function resetForm() {
   editingId = null;
   $titleForm.reset();
   $posterPreview.hidden = true;
-  document.querySelector("#t-downloads").value = 0;
   $formHeading.textContent = "افزودن پروژه جدید";
   $submitBtn.innerHTML = '<i data-lucide="plus"></i>افزودن پروژه';
   $resetFormBtn.hidden = true;
@@ -240,21 +229,15 @@ function resetForm() {
 
 $resetFormBtn.addEventListener("click", resetForm);
 
-$posterInput.addEventListener("change", () => {
-  const file = $posterInput.files[0];
-  if (!file) return;
-  $posterPreviewImg.src = URL.createObjectURL(file);
-  $posterPreview.hidden = false;
+$posterInput.addEventListener("input", () => {
+  const url = $posterInput.value.trim();
+  if (url) {
+    $posterPreviewImg.src = url;
+    $posterPreview.hidden = false;
+  } else {
+    $posterPreview.hidden = true;
+  }
 });
-
-async function uploadPoster(file) {
-  const ext = file.name.split(".").pop();
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error } = await sb.storage.from("posters").upload(path, file, { cacheControl: "3600", upsert: false });
-  if (error) throw error;
-  const { data } = sb.storage.from("posters").getPublicUrl(path);
-  return { url: data.publicUrl, path };
-}
 
 $titleForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -271,29 +254,22 @@ $titleForm.addEventListener("submit", async (e) => {
 
   const payload = {
     type: f.type.value,
-    status: f.status.value,
     title: f.title.value.trim(),
     title_en: f.titleEn.value.trim(),
     genre: f.genre.value.trim(),
     year: f.year.value ? Number(f.year.value) : null,
-    tags: f.tags.value.trim() ? f.tags.value.split("،").map((s) => s.trim()).filter(Boolean) : [],
-    rating: f.rating.value ? Number(f.rating.value) : 0,
-    episode_label: f.episode.value.trim(),
-    duration: f.duration.value.trim(),
-    translator: f.translator.value.trim(),
-    downloads: f.downloads.value ? Number(f.downloads.value) : 0,
     subtitle_link: f.subtitleLink.value.trim(),
     description: f.description.value.trim()
   };
 
-  try {
-    const file = $posterInput.files[0];
-    if (file) {
-      const { url, path } = await uploadPoster(file);
-      payload.poster_url = url;
-      payload.poster_path = path;
-    }
+  const posterUrl = f.poster.value.trim();
+  if (posterUrl) {
+    payload.poster_url = posterUrl;
+  } else {
+    payload.poster_url = null;
+  }
 
+  try {
     let error;
     if (editingId) {
       ({ error } = await sb.from("titles").update(payload).eq("id", editingId));
@@ -323,9 +299,6 @@ async function deleteTitle(id) {
   const { error } = await sb.from("titles").delete().eq("id", id);
   if (error) { showToast("حذف با خطا مواجه شد."); console.error(error); return; }
 
-  if (t.poster_path) {
-    sb.storage.from("posters").remove([t.poster_path]).catch(() => {});
-  }
   showToast("پروژه حذف شد.");
   await loadTitles();
   renderTitlesList();
