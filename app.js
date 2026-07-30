@@ -69,6 +69,7 @@ const HERO_IMAGE = "https://images.unsplash.com/photo-1517841905240-472988babdf9
 const state = {
   comments: [],
   loaded: false,
+  lastHash: "",
   catalog: { movies: { q: "" }, series: { q: "" }, shows: { q: "" } }
 };
 
@@ -129,7 +130,14 @@ function showToast(message) {
 }
 
 function openOverlay(el) { el.hidden = false; document.body.classList.add("dialog-open"); }
-function closeOverlay(el) { el.hidden = true; document.body.classList.remove("dialog-open"); }
+
+function closeOverlay(el) { 
+  el.hidden = true; 
+  document.body.classList.remove("dialog-open"); 
+  if (el === $detailsDialog) {
+    history.replaceState(null, '', state.lastHash || '#/home');
+  }
+}
 
 /* =====================================================
    Renderers
@@ -193,6 +201,7 @@ function viewHome() {
         <div>
           <span class="cap">تازه‌ها</span>
           <h2 class="section-title">جدیدترین زیرنویس‌ها</h2>
+          <p class="section-desc">آخرین قسمت‌ها و فیلم‌هایی که تیم Healer به‌تازگی ترجمه کرده.</p>
         </div>
         <a href="#/series" class="link-arrow">مشاهده‌ی همه<i data-lucide="arrow-left"></i></a>
       </div>
@@ -280,8 +289,39 @@ function viewLoadError() {
   </section>`;
 }
 
+/* =====================================================
+   Router & Logic
+===================================================== */
+
+function bindCatalogControls(route) {
+  const search = document.querySelector("#catalog-search");
+  if (!search || !routeMeta[route]) return;
+  search.addEventListener("input", (e) => { 
+    state.catalog[route].q = e.target.value; 
+    renderCatalogInPlace(route); 
+  });
+}
+
+function renderCatalogInPlace(route) {
+  const focused = document.activeElement && document.activeElement.id;
+  $app.innerHTML = viewCatalog(route);
+  icons();
+  bindCatalogControls(route);
+  if (focused === "catalog-search") {
+    const el = document.querySelector("#catalog-search");
+    if (el) { el.focus(); el.selectionStart = el.selectionEnd = el.value.length; }
+  }
+}
+
 function render() {
-  const route = (window.location.hash || "#/home").replace(/^#\/?/, "") || "home";
+  let route = (window.location.hash || "#/home").replace(/^#\/?/, "");
+  
+  let openTitleId = null;
+  // سیستم تشخیص لینک مستقیم پروژه
+  if (route.startsWith("title/")) {
+    openTitleId = Number(route.split("/")[1]);
+    route = (state.lastHash || "home").replace(/^#\/?/, "");
+  }
 
   if (!state.loaded) { $app.innerHTML = viewLoading(); icons(); return; }
   if (state.loadFailed) { $app.innerHTML = viewLoadError(); icons(); return; }
@@ -291,22 +331,17 @@ function render() {
   else $app.innerHTML = viewHome();
 
   document.querySelectorAll("[data-route]").forEach((a) => a.classList.toggle("active", a.dataset.route === route));
-  window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "instant" });
+  
+  if (!openTitleId) {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "instant" });
+  }
+  
   icons();
+  bindCatalogControls(route);
 
-  const search = document.querySelector("#catalog-search");
-  if (search && routeMeta[route]) {
-    search.addEventListener("input", (e) => {
-      state.catalog[route].q = e.target.value;
-      const focused = document.activeElement && document.activeElement.id;
-      $app.innerHTML = viewCatalog(route);
-      icons();
-      const newSearch = document.querySelector("#catalog-search");
-      if (newSearch) {
-         newSearch.addEventListener("input", arguments.callee);
-         if(focused === "catalog-search") { newSearch.focus(); newSearch.selectionStart = newSearch.selectionEnd = newSearch.value.length; }
-      }
-    });
+  // باز کردن خودکار پنجره اگر لینک حاوی آیدی باشد
+  if (openTitleId) {
+    setTimeout(() => openDetails(openTitleId), 50);
   }
 }
 
@@ -319,6 +354,13 @@ window.addEventListener("hashchange", render);
 function openDetails(id) {
   const item = findItem(id);
   if (!item) return;
+
+  // ذخیره لینک قبلی برای وقتی که پنجره بسته می‌شود
+  if (!window.location.hash.startsWith("#/title/")) {
+    state.lastHash = window.location.hash || "#/home";
+  }
+  // تغییر لینک مرورگر به صورت بی‌صدا
+  history.replaceState(null, '', '#/title/' + item.id);
 
   const projectComments = state.comments.filter((c) => c.title_id === item.id);
   const commentsHtml = projectComments.length 
@@ -355,8 +397,9 @@ function openDetails(id) {
         <li><span>نوع اثر</span><span>${typeLabel(item.type)}</span></li>
         <li><span>تعداد دانلود</span><span id="dl-count-${item.id}">${faNumber(item.downloads)}</span></li>
       </ul>
-      <div class="details-actions" style="margin-bottom: 10px;">
+      <div class="details-actions" style="margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
         ${downloadSection}
+        <button type="button" class="btn btn-outline" id="details-share"><i data-lucide="link"></i>کپی لینک</button>
       </div>
 
       <hr style="border-color: var(--border); margin: 30px 0 24px;">
@@ -392,7 +435,19 @@ function openDetails(id) {
 
   $detailsPanel.querySelector("[data-close-dialog]").addEventListener("click", () => closeOverlay($detailsDialog));
   
-  // تابع آپدیت شمارشگر دانلود در دیتابیس
+  // دکمه کپی لینک اختصاصی
+  const shareBtn = $detailsPanel.querySelector("#details-share");
+  if (shareBtn) {
+    shareBtn.addEventListener("click", () => {
+      const url = window.location.origin + window.location.pathname + "#/title/" + item.id;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast("لینک اختصاصی کپی شد.");
+      }).catch(() => {
+        showToast("مرورگر شما از کپی خودکار پشتیبانی نمی‌کند.");
+      });
+    });
+  }
+
   const updateDownloadCount = async () => {
     const newDownloads = item.downloads + 1;
     const { error } = await sb.from("titles").update({ downloads: newDownloads }).eq("id", item.id);
@@ -404,11 +459,14 @@ function openDetails(id) {
   };
 
   if (item.type === 'movie') {
-    $detailsPanel.querySelector("#details-download-movie").addEventListener("click", () => {
-      if (item.subtitleLink) window.open(item.subtitleLink, "_blank", "noopener");
-      showToast(`دانلود زیرنویس «${item.title}» شروع شد.`);
-      updateDownloadCount();
-    });
+    const btn = $detailsPanel.querySelector("#details-download-movie");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        if (item.subtitleLink) window.open(item.subtitleLink, "_blank", "noopener");
+        showToast(`دانلود زیرنویس «${item.title}» شروع شد.`);
+        updateDownloadCount();
+      });
+    }
   } else {
     $detailsPanel.querySelectorAll(".ep-download-btn").forEach(btn => {
       btn.addEventListener("click", () => {
