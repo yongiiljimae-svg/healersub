@@ -201,7 +201,6 @@ function viewHome() {
         <div>
           <span class="cap">تازه‌ها</span>
           <h2 class="section-title">جدیدترین زیرنویس‌ها</h2>
-          <p class="section-desc">آخرین قسمت‌ها و فیلم‌هایی که تیم Healer به‌تازگی ترجمه کرده.</p>
         </div>
         <a href="#/series" class="link-arrow">مشاهده‌ی همه<i data-lucide="arrow-left"></i></a>
       </div>
