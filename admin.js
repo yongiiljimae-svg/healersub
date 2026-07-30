@@ -284,15 +284,16 @@ $titleForm.addEventListener("submit", async (e) => {
     $titleFormError.hidden = false; return;
   }
 
-  const payload = {
+const payload = {
     type: f.type.value,
-    status: "ongoing", // جلوگیری از خطای دیتابیس
+    status: "ongoing", 
     title: f.title.value.trim(),
     title_en: f.titleEn.value.trim(),
     genre: f.genre.value.trim(),
     year: f.year.value ? Number(f.year.value) : null,
     description: f.description.value.trim(),
-    poster_url: f.poster.value.trim() || null
+    poster_url: f.poster.value.trim() || null,
+    updated_at: new Date().toISOString() // ثبت زمان دقیق در هنگام ویرایش یا افزودن
   };
 
   if (f.type.value === "movie") {
