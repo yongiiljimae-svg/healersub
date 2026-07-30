@@ -18,7 +18,8 @@ function mapTitleRow(r) {
     subtitleLink: r.subtitle_link || "",
     episodes: r.episodes || [],
     description: r.description || "",
-    downloads: r.downloads || 0
+    downloads: r.downloads || 0,
+    updatedAt: r.updated_at || r.created_at // خط جدید
   };
 }
 
@@ -41,7 +42,7 @@ function relativeDate(iso) {
 }
 
 async function loadTitles() {
-  const { data, error } = await sb.from("titles").select("*").order("created_at", { ascending: false });
+  const { data, error } = await sb.from("titles").select("*").order("updated_at", { ascending: false });
   if (error) { console.error("loadTitles:", error); return false; }
   mediaItems = (data || []).map(mapTitleRow);
   return true;
@@ -192,7 +193,7 @@ function commentCard(c) {
 ===================================================== */
 
 function viewHome() {
-  const latest = [...mediaItems].sort((a, b) => b.id - a.id).slice(0, 8);
+  const latest = [...mediaItems].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 8);
 
   return `
   <section class="section section-line">
@@ -231,7 +232,7 @@ function filteredCatalog(routeKey) {
       m.title.toLowerCase().includes(q) || m.titleEn.toLowerCase().includes(q) || m.genre.toLowerCase().includes(q)
     );
   }
-  return [...items].sort((a, b) => b.id - a.id);
+  return [...items].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 }
 
 function viewCatalog(routeKey) {
