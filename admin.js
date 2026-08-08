@@ -367,36 +367,71 @@ function renderCommentsList() {
     return;
   }
 
-  $commentsList.innerHTML = comments.map((c) => `
+  $commentsList.innerHTML = comments.map((c) => {
+    // برچسب "پاسخ" اگر پیام فرزند باشد
+    const parentLabel = c.parent_id ? `<span style="font-size:0.7rem; color:#d4af37; border:1px solid #d4af37; border-radius:4px; padding:1px 4px; margin-right:5px;">پاسخ</span>` : '';
+    // استایل آبی اگر پیام مدیر باشد
+    const adminStyle = c.is_admin ? 'color: #7bd4f8;' : '';
+    
+    return `
     <div class="admin-row" style="align-items:flex-start">
       <div class="admin-row-main">
-        <strong>${escapeHTML(c.name)} <span class="admin-status-pill ${c.approved ? "approved" : "pending"}">${c.approved ? "تاییدشده" : "در انتظار"}</span></strong>
-        <p class="admin-comment-text">${escapeHTML(c.text)}</p>
+        <strong>${escapeHTML(c.name)} ${c.is_admin ? '(شما)' : ''} ${parentLabel} <span class="admin-status-pill ${c.approved ? "approved" : "pending"}">${c.approved ? "تاییدشده" : "در انتظار"}</span></strong>
+        <p class="admin-comment-text" style="${adminStyle}">${escapeHTML(c.text)}</p>
+        
+        <!-- کادر مخفی پاسخ دادن -->
+        <div id="reply-box-${c.id}" style="display:none; margin-top:10px;">
+           <textarea id="reply-text-${c.id}" placeholder="متن پاسخ شما به عنوان مدیر..." style="width:100%; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:8px; padding:8px; color:var(--text); font-family:inherit; resize:vertical;"></textarea>
+           <button type="button" class="btn btn-gold btn-sm" data-send-reply="${c.id}" data-title-id="${c.title_id}" style="margin-top:6px;">ارسال پاسخ</button>
+        </div>
       </div>
       <div class="admin-row-actions">
+        ${!c.parent_id ? `<button type="button" data-toggle-reply="${c.id}" aria-label="پاسخ دادن"><i data-lucide="reply"></i></button>` : ''}
         ${c.approved ? "" : `<button type="button" data-approve="${c.id}" aria-label="تایید"><i data-lucide="check"></i></button>`}
         <button type="button" class="danger" data-delete-comment="${c.id}" aria-label="حذف"><i data-lucide="trash-2"></i></button>
       </div>
-    </div>`).join("");
+    </div>`
+  }).join("");
+  
   icons();
+
+  // منطق باز شدن کادر پاسخ
+  $commentsList.querySelectorAll("[data-toggle-reply]").forEach(b => {
+    b.addEventListener("click", () => {
+      const box = document.getElementById(`reply-box-${b.dataset.toggleReply}`);
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    });
+  });
+
+  // منطق ارسال پاسخ مدیر
+  $commentsList.querySelectorAll("[data-send-reply]").forEach(b => {
+    b.addEventListener("click", async () => {
+      const parentId = b.dataset.sendReply;
+      const titleId = b.dataset.titleId;
+      const textInput = document.getElementById(`reply-text-${parentId}`);
+      const text = textInput.value.trim();
+      if(!text) return;
+      
+      b.disabled = true;
+      const { error } = await sb.from("comments").insert({
+        title_id: titleId, 
+        name: "مدیر سایت", 
+        rating: 5, 
+        text: text,
+        approved: true,       // نظرات مدیر مستقیماً تایید می‌شود
+        parent_id: parentId,  // مشخص می‌کند که این یک پاسخ است
+        is_admin: true        // مدیر بودن را تایید می‌کند تا در سایت آبی شود
+      });
+      
+      if(error) { showToast("خطا در ارسال پاسخ."); b.disabled = false; return; }
+      showToast("پاسخ شما با موفقیت ثبت شد.");
+      await loadComments();
+      renderCommentsList();
+    });
+  });
 
   $commentsList.querySelectorAll("[data-approve]").forEach((b) => b.addEventListener("click", () => approveComment(Number(b.dataset.approve))));
   $commentsList.querySelectorAll("[data-delete-comment]").forEach((b) => b.addEventListener("click", () => deleteComment(Number(b.dataset.deleteComment))));
-}
-
-async function approveComment(id) {
-  await sb.from("comments").update({ approved: true }).eq("id", id);
-  showToast("نظر تایید شد.");
-  await loadComments();
-  renderCommentsList();
-}
-
-async function deleteComment(id) {
-  if (!confirm("این نظر حذف بشه؟")) return;
-  await sb.from("comments").delete().eq("id", id);
-  showToast("نظر حذف شد.");
-  await loadComments();
-  renderCommentsList();
 }
 
 checkSession();
