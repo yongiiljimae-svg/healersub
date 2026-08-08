@@ -415,7 +415,7 @@ function renderCommentsList() {
       b.disabled = true;
       const { error } = await sb.from("comments").insert({
         title_id: titleId, 
-        name: "مدیر سایت", 
+        name: "هیلر", 
         rating: 5, 
         text: text,
         approved: true,       // نظرات مدیر مستقیماً تایید می‌شود
