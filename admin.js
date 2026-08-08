@@ -434,4 +434,19 @@ function renderCommentsList() {
   $commentsList.querySelectorAll("[data-delete-comment]").forEach((b) => b.addEventListener("click", () => deleteComment(Number(b.dataset.deleteComment))));
 }
 
+async function approveComment(id) {
+  await sb.from("comments").update({ approved: true }).eq("id", id);
+  showToast("نظر تایید شد.");
+  await loadComments();
+  renderCommentsList();
+}
+
+async function deleteComment(id) {
+  if (!confirm("این نظر حذف بشه؟")) return;
+  await sb.from("comments").delete().eq("id", id);
+  showToast("نظر حذف شد.");
+  await loadComments();
+  renderCommentsList();
+}
+
 checkSession();
