@@ -184,11 +184,27 @@ function createEpRow(label = "", link = "") {
   row.style.display = "flex";
   row.style.gap = "8px";
   row.innerHTML = `
+    <button type="button" class="btn btn-outline btn-sm move-up" style="border-radius: 8px; padding: 0 8px;" title="انتقال به بالا"><i data-lucide="chevron-up"></i></button>
+    <button type="button" class="btn btn-outline btn-sm move-down" style="border-radius: 8px; padding: 0 8px;" title="انتقال به پایین"><i data-lucide="chevron-down"></i></button>
     <input type="text" placeholder="مثلاً: قسمت 1" value="${escapeHTML(label)}" class="ep-label" required style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
     <input type="url" placeholder="لینک زیرنویس" value="${link}" class="ep-link" required style="flex: 2; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
     <button type="button" class="btn danger btn-sm del-ep" style="border-radius: 8px; padding: 0 12px;"><i data-lucide="trash"></i></button>
   `;
+  
   row.querySelector(".del-ep").onclick = () => row.remove();
+  
+  // منطق دکمه بالا بردن
+  row.querySelector(".move-up").onclick = () => {
+    const prev = row.previousElementSibling;
+    if (prev) row.parentNode.insertBefore(row, prev);
+  };
+  
+  // منطق دکمه پایین آوردن
+  row.querySelector(".move-down").onclick = () => {
+    const next = row.nextElementSibling;
+    if (next) row.parentNode.insertBefore(next, row);
+  };
+
   return row;
 }
 
