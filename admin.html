@@ -138,11 +138,13 @@
       </button>
     </form>
 
-    <hr class="admin-divider">
+<hr class="admin-divider">
 
-    <h2>پروژه‌های موجود</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+      <h2 style="margin: 0;">پروژه‌های موجود</h2>
+      <input type="search" id="admin-search-titles" placeholder="جستجوی عنوان پروژه..." style="background: rgba(0,0,0,0.1); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); outline: none; width: 100%; max-width: 300px;">
+    </div>
     <div class="admin-list" id="titles-list"><p class="admin-empty">در حال بارگذاری...</p></div>
-  </section>
 
   <!-- ---------- TAB: COMMENTS ---------- -->
   <section class="admin-panel-view" id="tab-comments" hidden>
