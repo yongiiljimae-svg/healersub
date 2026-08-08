@@ -140,11 +140,21 @@ async function loadComments() {
 }
 
 function renderTitlesList() {
-  if (!titles.length) {
-    $titlesList.innerHTML = `<p class="admin-empty">هنوز پروژه‌ای اضافه نشده.</p>`;
+  const searchInput = document.querySelector("#admin-search-titles");
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+  // فیلتر کردن لیست پروژه‌ها بر اساس عنوان فارسی یا انگلیسی
+  const filteredTitles = titles.filter(t => 
+    (t.title && t.title.toLowerCase().includes(query)) || 
+    (t.title_en && t.title_en.toLowerCase().includes(query))
+  );
+
+  if (!filteredTitles.length) {
+    $titlesList.innerHTML = `<p class="admin-empty">پروژه‌ای یافت نشد.</p>`;
     return;
   }
-  $titlesList.innerHTML = titles.map((t) => `
+  
+  $titlesList.innerHTML = filteredTitles.map((t) => `
     <div class="admin-row">
       <img src="${t.poster_url || ""}" alt="">
       <div class="admin-row-main">
@@ -160,6 +170,12 @@ function renderTitlesList() {
 
   $titlesList.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () => startEdit(Number(b.dataset.edit))));
   $titlesList.querySelectorAll("[data-delete]").forEach((b) => b.addEventListener("click", () => deleteTitle(Number(b.dataset.delete))));
+}
+
+// فعال کردن جستجوی زنده (Live Search) هنگام تایپ
+const $adminSearchTitles = document.querySelector("#admin-search-titles");
+if ($adminSearchTitles) {
+  $adminSearchTitles.addEventListener("input", renderTitlesList);
 }
 
 /* =====================================================
