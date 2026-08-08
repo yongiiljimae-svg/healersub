@@ -278,3 +278,10 @@ body.dialog-open{ overflow:hidden; }
   height: 100%;
   object-fit: contain !important; /* این دستور از برش خوردن عکس جلوگیری می‌کند */
 }
+
+/* استایل دکمه پاسخ و نظرات فرزند */
+.btn-reply {
+  background: none; border: none; color: var(--muted); font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-top: 10px; padding: 0;
+}
+.btn-reply:hover { color: var(--gold); }
+.replies { margin-right: 15px; border-right: 2px solid var(--border); padding-right: 10px; }
