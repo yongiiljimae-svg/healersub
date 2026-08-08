@@ -24,7 +24,7 @@ function mapTitleRow(r) {
 }
 
 function mapCommentRow(r) {
-  return { id: r.id, title_id: r.title_id, name: r.name, rating: r.rating, text: r.text, date: relativeDate(r.created_at) };
+  return { id: r.id, title_id: r.title_id, name: r.name, rating: r.rating, text: r.text, date: relativeDate(r.created_at), parent_id: r.parent_id, is_admin: r.is_admin };
 }
 
 function relativeDate(iso) {
@@ -176,15 +176,23 @@ function categoryTile(key) {
   </a>`;
 }
 
-function commentCard(c) {
+function commentCard(c, isChild = false) {
+  const adminStyle = c.is_admin ? 'color: var(--gold);' : '';
+  const cardStyle = isChild ? 'margin-top: 10px; padding: 10px 14px; background: rgba(255,255,255,0.02);' : 'margin-bottom: 12px; padding: 14px;';
+  const avatarStyle = c.is_admin ? 'background: rgba(123, 212, 248, 0.15); color: var(--gold);' : '';
+  
   return `
-  <article class="comment-card" style="margin-bottom: 12px; padding: 14px;">
+  <article class="comment-card ${c.is_admin ? 'admin-reply' : ''}" style="${cardStyle}">
     <div class="comment-top" style="margin-bottom: 6px;">
-      <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem;">${escapeHTML(c.name.charAt(0))}</div>
-      <div class="comment-who"><strong style="font-size: 0.9rem;">${escapeHTML(c.name)}</strong><span style="font-size: 0.7rem;">${escapeHTML(c.date)}</span></div>
+      <div class="avatar" style="width: 30px; height: 30px; font-size: 0.8rem; ${avatarStyle}">${escapeHTML(c.name.charAt(0))}</div>
+      <div class="comment-who">
+        <strong style="font-size: 0.9rem; ${adminStyle}">${escapeHTML(c.name)} ${c.is_admin ? '<span style="font-size:0.65rem; background:var(--gold); color:#000; padding:2px 6px; border-radius:4px; margin-right:4px;">مدیر</span>' : ''}</strong>
+        <span style="font-size: 0.7rem;">${escapeHTML(c.date)}</span>
+      </div>
     </div>
-    <div class="stars" style="margin-bottom: 4px;">${starIcons(c.rating)}</div>
-    <p style="font-size: 0.85rem;">${escapeHTML(c.text)}</p>
+    ${!isChild ? `<div class="stars" style="margin-bottom: 4px;">${starIcons(c.rating)}</div>` : ''}
+    <p style="font-size: 0.85rem; ${adminStyle}">${escapeHTML(c.text)}</p>
+    ${!isChild ? `<button type="button" class="btn-reply" data-id="${c.id}" data-name="${escapeHTML(c.name)}"><i data-lucide="reply" style="width: 14px; height: 14px;"></i> پاسخ دادن</button>` : ''}
   </article>`;
 }
 
@@ -362,10 +370,21 @@ function openDetails(id) {
   // تغییر لینک مرورگر به صورت بی‌صدا
   history.replaceState(null, '', '#/title/' + item.id);
 
+  // --- بخش اول که جا افتاده بود: منطق نمایش تو در توی نظرات ---
+  let replyParentId = null; 
   const projectComments = state.comments.filter((c) => c.title_id === item.id);
-  const commentsHtml = projectComments.length 
-    ? projectComments.map(commentCard).join("") 
-    : `<p style="color: var(--muted); font-size: 0.85rem; padding: 10px 0;">هنوز نظری ثبت نشده. اولین نفر باش!</p>`;
+  const parentComments = projectComments.filter(c => !c.parent_id);
+  
+  let commentsHtml = '';
+  if (parentComments.length) {
+    commentsHtml = parentComments.map(p => {
+      const children = projectComments.filter(c => c.parent_id === p.id).sort((a,b) => a.id - b.id);
+      const childrenHtml = children.map(child => commentCard(child, true)).join('');
+      return `<div>${commentCard(p, false)} <div class="replies">${childrenHtml}</div></div>`;
+    }).join("");
+  } else {
+    commentsHtml = `<p style="color: var(--muted); font-size: 0.85rem; padding: 10px 0;">هنوز نظری ثبت نشده. اولین نفر باش!</p>`;
+  }
 
   let downloadSection = "";
   if (item.type === 'movie') {
@@ -408,7 +427,14 @@ function openDetails(id) {
       <div class="project-comments-list" style="margin-bottom: 24px;">${commentsHtml}</div>
 
       <div class="comment-form-card" style="position: static; padding: 20px; background: rgba(0,0,0,0.2);">
-        <h4 style="margin: 0 0 8px; font-size: 0.95rem;">ثبت نظر جدید</h4>
+        
+        <!-- --- بخش دوم که جا افتاده بود: ساختار HTML فرم برای حالت پاسخ --- -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+          <h4 style="margin: 0; font-size: 0.95rem;" id="reply-title-indicator">ثبت نظر جدید</h4>
+          <button type="button" id="cancel-reply-btn" style="display: none; background: none; border: none; color: #f28b8b; font-size: 0.8rem; cursor: pointer;">لغو پاسخ</button>
+        </div>
+        <!-- --------------------------------------------------------------- -->
+
         <p style="color: var(--muted); font-size: 0.8rem; margin: 0 0 16px;">نظرت پس از تایید مدیر برای این اثر نمایش داده می‌شود.</p>
         <form id="project-comment-form" novalidate>
           <div class="field-group" style="margin-bottom: 14px;">
@@ -435,7 +461,6 @@ function openDetails(id) {
 
   $detailsPanel.querySelector("[data-close-dialog]").addEventListener("click", () => closeOverlay($detailsDialog));
   
-  // دکمه کپی لینک اختصاصی
   const shareBtn = $detailsPanel.querySelector("#details-share");
   if (shareBtn) {
     shareBtn.addEventListener("click", () => {
@@ -486,6 +511,26 @@ function openDetails(id) {
     });
   });
 
+  $detailsPanel.querySelectorAll(".btn-reply").forEach(btn => {
+    btn.addEventListener("click", () => {
+      replyParentId = Number(btn.dataset.id);
+      const titleIndicator = $detailsPanel.querySelector("#reply-title-indicator");
+      const cancelBtn = $detailsPanel.querySelector("#cancel-reply-btn");
+      if (titleIndicator) titleIndicator.textContent = `پاسخ به ${btn.dataset.name}`;
+      if (cancelBtn) cancelBtn.style.display = 'inline-block';
+      $detailsPanel.querySelector("#c-text").focus();
+    });
+  });
+
+  const cancelReplyBtn = $detailsPanel.querySelector("#cancel-reply-btn");
+  if (cancelReplyBtn) {
+     cancelReplyBtn.addEventListener("click", () => {
+       replyParentId = null;
+       $detailsPanel.querySelector("#reply-title-indicator").textContent = `ثبت نظر جدید`;
+       cancelReplyBtn.style.display = 'none';
+     });
+  }
+
   const form = $detailsPanel.querySelector("#project-comment-form");
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -495,13 +540,28 @@ function openDetails(id) {
     const submitBtn = form.querySelector("button[type=submit]");
     submitBtn.disabled = true;
 
-    const { error } = await sb.from("comments").insert({ title_id: item.id, name, rating: selectedStars, text, approved: false });
+    const { error } = await sb.from("comments").insert({ 
+      title_id: item.id, 
+      name: name, 
+      rating: selectedStars, 
+      text: text, 
+      approved: false,
+      parent_id: replyParentId, 
+      is_admin: false 
+    });
+
     submitBtn.disabled = false;
     if (error) { showToast("ثبت نظر با خطا مواجه شد. دوباره امتحان کن."); return; }
 
     form.reset();
     selectedStars = 5;
     ratingBtns.forEach((b) => b.classList.toggle("on", true));
+    
+    replyParentId = null;
+    const titleIndicator = $detailsPanel.querySelector("#reply-title-indicator");
+    if (titleIndicator) titleIndicator.textContent = `ثبت نظر جدید`;
+    if (cancelReplyBtn) cancelReplyBtn.style.display = 'none';
+
     showToast("نظر تو ثبت شد و پس از تایید مدیریت نمایش داده می‌شود.");
   });
 }
