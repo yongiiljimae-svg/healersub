@@ -285,3 +285,19 @@ body.dialog-open{ overflow:hidden; }
 }
 .btn-reply:hover { color: var(--gold); }
 .replies { margin-right: 15px; border-right: 2px solid var(--border); padding-right: 10px; }
+
+.season-accordion summary {
+  list-style: none;
+  outline: none;
+}
+.season-accordion summary::-webkit-details-marker {
+  display: none;
+}
+.season-accordion[open] summary .season-chevron {
+  transform: rotate(180deg);
+}
+.season-chevron {
+  transition: transform 0.3s ease;
+  width: 18px;
+  height: 18px;
+}
