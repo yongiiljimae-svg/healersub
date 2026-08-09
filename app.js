@@ -389,17 +389,40 @@ function openDetails(id) {
   let downloadSection = "";
   if (item.type === 'movie') {
     downloadSection = `<button type="button" class="btn btn-gold" id="details-download-movie"><i data-lucide="download"></i>دانلود زیرنویس فیلم</button>`;
-  } else {
+} else {
+    const groupedEps = {};
+    item.episodes.forEach(ep => {
+      const sName = ep.season || "فصل ۱"; 
+      if (!groupedEps[sName]) groupedEps[sName] = [];
+      groupedEps[sName].push(ep);
+    });
+
+    const seasonsHtml = Object.keys(groupedEps).map(seasonName => {
+      const epHtml = groupedEps[seasonName].map(ep => `
+        <button type="button" class="btn btn-outline ep-download-btn" data-link="${ep.link}" style="justify-content: center; font-size: 0.85rem; padding: 10px;">
+          <i data-lucide="download"></i>${escapeHTML(ep.label)}
+        </button>
+      `).join("");
+
+      const isOpen = Object.keys(groupedEps).length === 1 ? "open" : "";
+      
+      return `
+        <details class="season-accordion" style="margin-bottom: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px;" ${isOpen}>
+          <summary style="padding: 14px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.95rem; user-select: none; color: var(--gold);">
+            ${escapeHTML(seasonName)}
+            <i data-lucide="chevron-down" class="season-chevron"></i>
+          </summary>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding: 16px; border-top: 1px solid var(--border);">
+            ${epHtml}
+          </div>
+        </details>
+      `;
+    }).join("");
+
     downloadSection = `
       <div style="width: 100%;">
-        <h3 style="font-size: 1rem; margin-bottom: 12px; color: var(--gold);">لیست قسمت‌ها:</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;">
-          ${item.episodes.map(ep => `
-            <button type="button" class="btn btn-outline ep-download-btn" data-link="${ep.link}" style="justify-content: center; font-size: 0.85rem; padding: 10px;">
-              <i data-lucide="download"></i>${escapeHTML(ep.label)}
-            </button>
-          `).join("")}
-        </div>
+        <h3 style="font-size: 1rem; margin-bottom: 14px; color: var(--gold);">لیست قسمت‌ها:</h3>
+        ${seasonsHtml}
       </div>
     `;
   }
