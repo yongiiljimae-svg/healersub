@@ -215,8 +215,6 @@ function createEpRow(label = "", link = "", season = "") {
   row.querySelector(".move-up").onclick = () => { const prev = row.previousElementSibling; if (prev) row.parentNode.insertBefore(row, prev); };
   row.querySelector(".move-down").onclick = () => { const next = row.nextElementSibling; if (next) row.parentNode.insertBefore(next, row); };
   
-  return row;
-}
 
 $addEpBtn.addEventListener("click", () => {
   $episodesContainer.appendChild(createEpRow());
