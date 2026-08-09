@@ -194,20 +194,29 @@ $typeSelect.addEventListener("change", (e) => {
   $linkSeriesWrap.hidden = !isSeries;
 });
 
-function createEpRow(label = "", link = "") {
+function createEpRow(label = "", link = "", season = "") {
   const row = document.createElement("div");
   row.className = "ep-row";
   row.style.display = "flex";
   row.style.gap = "8px";
+  row.style.flexWrap = "wrap"; // برای جلوگیری از به هم ریختگی در گوشی
   row.innerHTML = `
-    <button type="button" class="btn btn-outline btn-sm move-up" style="border-radius: 8px; padding: 0 8px;" title="انتقال به بالا"><i data-lucide="chevron-up"></i></button>
-    <button type="button" class="btn btn-outline btn-sm move-down" style="border-radius: 8px; padding: 0 8px;" title="انتقال به پایین"><i data-lucide="chevron-down"></i></button>
-    <input type="text" placeholder="مثلاً: قسمت 1" value="${escapeHTML(label)}" class="ep-label" required style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
-    <input type="url" placeholder="لینک زیرنویس" value="${link}" class="ep-link" required style="flex: 2; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
-    <button type="button" class="btn danger btn-sm del-ep" style="border-radius: 8px; padding: 0 12px;"><i data-lucide="trash"></i></button>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <button type="button" class="btn btn-outline btn-sm move-up" style="border-radius: 8px; padding: 2px 8px;" title="انتقال به بالا"><i data-lucide="chevron-up"></i></button>
+      <button type="button" class="btn btn-outline btn-sm move-down" style="border-radius: 8px; padding: 2px 8px;" title="انتقال به پایین"><i data-lucide="chevron-down"></i></button>
+    </div>
+    <input type="text" placeholder="فصل (مثلاً: فصل ۱)" value="${escapeHTML(season)}" class="ep-season" style="flex: 1; min-width:110px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
+    <input type="text" placeholder="مثلاً: قسمت ۱" value="${escapeHTML(label)}" class="ep-label" required style="flex: 1; min-width:110px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
+    <input type="url" placeholder="لینک زیرنویس" value="${link}" class="ep-link" required style="flex: 2; min-width:150px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: var(--text);">
+    <button type="button" class="btn danger btn-sm del-ep" style="border-radius: 8px; padding: 0 12px; height: 38px; align-self: center;"><i data-lucide="trash"></i></button>
   `;
   
   row.querySelector(".del-ep").onclick = () => row.remove();
+  row.querySelector(".move-up").onclick = () => { const prev = row.previousElementSibling; if (prev) row.parentNode.insertBefore(row, prev); };
+  row.querySelector(".move-down").onclick = () => { const next = row.nextElementSibling; if (next) row.parentNode.insertBefore(next, row); };
+  
+  return row;
+}
   
   // منطق دکمه بالا بردن
   row.querySelector(".move-up").onclick = () => {
@@ -266,9 +275,9 @@ function startEdit(id) {
   }
 
   // Load episodes
-  $episodesContainer.innerHTML = "";
+$episodesContainer.innerHTML = "";
   if (t.type !== "movie" && t.episodes && t.episodes.length) {
-    t.episodes.forEach(ep => $episodesContainer.appendChild(createEpRow(ep.label, ep.link)));
+    t.episodes.forEach(ep => $episodesContainer.appendChild(createEpRow(ep.label, ep.link, ep.season)));
   } else if (t.type !== "movie") {
     $episodesContainer.appendChild(createEpRow());
   }
@@ -337,11 +346,13 @@ const payload = {
     payload.episodes = [];
   } else {
     payload.subtitle_link = "#"; // برای رفع ارور required دیتابیس
-    let eps = [];
+let eps = [];
     document.querySelectorAll(".ep-row").forEach(r => {
+       const seasonInput = r.querySelector(".ep-season");
+       const ssn = seasonInput ? seasonInput.value.trim() : "";
        const lbl = r.querySelector(".ep-label").value.trim();
        const lnk = r.querySelector(".ep-link").value.trim();
-       if(lbl && lnk) eps.push({ label: lbl, link: lnk });
+       if(lbl && lnk) eps.push({ season: ssn, label: lbl, link: lnk });
     });
     if(eps.length === 0) {
       $titleFormError.textContent = "حداقل یک قسمت برای سریال وارد کنید.";
