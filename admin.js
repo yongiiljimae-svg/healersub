@@ -217,6 +217,11 @@ function createEpRow(label = "", link = "", season = "") {
   
   return row;
 }
+
+$addEpBtn.addEventListener("click", () => {
+  $episodesContainer.appendChild(createEpRow());
+  icons();
+});
   
   // منطق دکمه بالا بردن
   row.querySelector(".move-up").onclick = () => {
